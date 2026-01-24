@@ -1,0 +1,53 @@
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head runat="server">
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<link href="/contenido/css/estilo/menu.css" rel="stylesheet" />
+  <link href="https://maxst.icons8.com/vue-static/landings/line-awesome/line-awesome/1.3.0/css/line-awesome.min.css" rel="stylesheet" />
+  <title>NeoVenta - Menú Principal</title>
+</head>
+
+<body>
+    <form id="form1" runat="server">
+      <header>
+        <div class="logo">NeoVenta</div>
+        <a href="/Default.aspx" class="logout">Cerrar sesión</a>
+      </header>
+
+      <main>
+        <section class="menu">
+          <div class="card">
+            <div class="icon-circle">
+              <i class="las la-cash-register"></i>
+            </div>
+            <p>Apertura y cierre de caja <br />Punto de venta</p>
+            <a href="wfVentas.aspx" class="btn-card">Ventas</a>
+          </div>
+
+          <div class="card">
+            <div class="icon-circle">
+              <i class="las la-book-open"></i>
+            </div>
+            <p>Visualizar usuarios, clientes,<br /> proveedores y productos</p>
+            <a href="wfCatalogos.aspx" class="btn-card">Catálogos</a>
+          </div>
+
+          <div class="card">
+            <div class="icon-circle">
+              <i class="las la-calendar-check"></i>
+            </div>
+            <p>Reportes de ventas</p>
+            <a href="wfReportes.aspx" class="btn-card">Reportes</a>
+          </div>
+        </section>
+      </main>
+
+      <footer>
+        <i class="fas fa-user-cog"></i>
+      </footer>
+
+        <script src="/contenido/javascript/menu.js"></script>
+    </form>
+</body>
+</html>

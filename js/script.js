@@ -14,7 +14,7 @@ document.addEventListener("DOMContentLoaded", function () {
         mensajeError.textContent = "";
 
         if (usuario === "admin" && password === "1234") {
-            window.location.href = "vista/wfMenu.aspx"; // Redirige al menú
+            window.location.href = "/menu.html"; // Redirige al menú
         } else {
             mensajeError.textContent = "Usuario o contraseña incorrectos.";
             mensajeError.style.display = "block";

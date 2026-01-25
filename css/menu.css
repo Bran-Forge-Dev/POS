@@ -1,0 +1,175 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Inter', sans-serif;
+}
+
+body {
+    background-color: #fff;
+    color: #333;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+header {
+    display: flex;
+    justify-content: space-between; /* Logo a la izquierda, logout a la derecha */
+    align-items: center;
+    padding: 25px 40px;
+    border-bottom: 2px solid #c79a32;
+    background-color: #fff; /* asegura contraste */
+    position: relative; /* habilita posicionamiento absoluto si lo necesitas */
+}
+
+.logo {
+    font-size: 26px;
+    font-weight: 700;
+    color: #000;
+}
+
+.logout {
+    font-weight: bold;
+    color: #c70000; /* rojo intenso */
+    text-decoration: none;
+    font-size: 16px;
+    transition: color 0.3s ease, transform 0.2s ease;
+    padding: 8px 12px;
+    border-radius: 4px;
+    display: inline-block;
+}
+
+    .logout:hover {
+        color: #900000;
+        background-color: #fbeaea;
+        transform: scale(1.05);
+        text-decoration: underline;
+    }
+
+main {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.menu {
+    display: flex;
+    justify-content: center;
+    gap: 40px;
+    flex-wrap: wrap;
+    margin-top: 30px;
+}
+
+.card {
+    border: 1px solid #000;
+    border-radius: 6px;
+    width: 280px;
+    text-align: center;
+    padding: 25px;
+    background: #fff;
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+
+    .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+
+/* Ícono circular arriba de cada cuadro */
+.icon-circle {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    border: 2px solid #c79a32;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 0 auto 15px;
+    color: #c79a32;
+    font-size: 36px;
+    background-color: #fff;
+}
+
+    .icon-circle:hover {
+        background-color: #c79a32;
+        color: #fff;
+        transform: scale(1.1);
+        transition: all 0.3s ease;
+    }
+
+.card p {
+    font-size: 15px;
+    color: #333;
+    margin-bottom: 18px;
+    line-height: 1.4;
+}
+
+/* Botón dentro de cuadro */
+.card button {
+    background-color: #c79a32;
+    color: white;
+    font-weight: bold;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 30px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: all 0.3s ease;
+}
+
+    .card button:hover {
+        background-color: #a77e22;
+        transform: scale(1.05);
+    }
+
+footer {
+    position: fixed;
+    bottom: 20px;
+    right: 25px;
+}
+
+    footer i {
+        color: #c79a32;
+        font-size: 32px;
+        cursor: pointer;
+        transition: transform 0.3s;
+    }
+
+        footer i:hover {
+            transform: rotate(20deg);
+        }
+
+/*  Responsivo */
+@media (max-width: 900px) {
+    .menu {
+        flex-direction: column;
+        align-items: center;
+        gap: 25px;
+    }
+
+    .card {
+        width: 85%;
+    }
+}
+
+/* Enlaces como botón */
+.btn-card {
+    display: inline-block;
+    background-color: #c79a32;
+    color: white;
+    font-weight: bold;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 30px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: all 0.3s ease;
+    text-decoration: none;
+}
+
+    .btn-card:hover {
+        background-color: #a77e22;
+        transform: scale(1.05);
+    }

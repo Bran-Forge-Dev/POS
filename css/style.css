@@ -1,0 +1,111 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Inter', sans-serif;
+}
+
+body {
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    background: #f0f0f0;
+}
+
+/* Fondo con imagen difuminada */
+.background {
+    background-image: url("/contenido/imagenes/fondo.jpg");
+    background-size: cover;
+    background-position: center;
+    filter: blur(3px) brightness(0.8);
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+}
+
+/* login */
+.login-container {
+    background: #fff;
+    border-radius: 10px;
+    padding: 40px 35px;
+    width: 340px;
+    border: 2px solid #2c66ff;
+    box-shadow: 0 4px 25px rgba(0, 0, 0, 0.15);
+    text-align: left;
+}
+
+    .login-container h2 {
+        font-weight: 700;
+        color: #000;
+        margin-bottom: 8px;
+    }
+
+    .login-container p {
+        color: #555;
+        font-size: 14px;
+        margin-bottom: 25px;
+    }
+
+/* Inputs */
+label {
+    display: block;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 5px;
+}
+
+.input-group {
+    display: flex;
+    align-items: center;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    padding: 8px;
+    margin-bottom: 20px;
+    background-color: #fff;
+}
+
+    .input-group .las la-user {
+        font-size: 16px;
+        margin-right: 8px;
+        color: #000;
+    }
+
+    .input-group input {
+        border: none;
+        outline: none;
+        flex: 1;
+        font-size: 14px;
+        background: transparent;
+    }
+
+/* Botón */
+button {
+    width: 100%;
+    padding: 12px;
+    background-color: #c79a32;
+    color: white;
+    font-weight: 600;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+    button:hover {
+        background-color: #a77e22;
+    }
+
+/* Logo */
+.logo {
+    text-align: center;
+    margin-top: 25px;
+    font-size: 22px;
+    font-weight: 700;
+    color: #000;
+}
+    

@@ -16,7 +16,7 @@ body {
 
 /* Fondo con imagen difuminada */
 .background {
-    background-image: url("imagenes/fondo.jpg");
+    background-image: url("../imagenes/fondo.jpg");
     background-size: cover;
     background-position: center;
     filter: blur(3px) brightness(0.8);

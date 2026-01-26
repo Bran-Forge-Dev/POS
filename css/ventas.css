@@ -1,0 +1,189 @@
+body {
+    font-family: 'Inter', sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #fff;
+    text-align: center;
+}
+
+.encabezado {
+    display: flex;
+    align-items: center;
+    padding: 10px 20px;
+    border-bottom: 2px solid #f2c94c;
+}
+
+.btn-regresar {
+    color: #c67f00;
+    font-size: 24px;
+    text-decoration: none;
+    margin-right: 10px;
+}
+
+.titulo {
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin: 0 auto;
+    color: #000;
+}
+
+.subtitulo {
+    margin-top: 40px;
+    font-size: 1.6rem;
+    color: #222;
+}
+
+.contenedor-botones {
+    display: flex;
+    justify-content: center;
+    gap: 50px;
+    flex-wrap: wrap;
+    margin-top: 40px;
+    padding: 0 20px;
+}
+
+.card {
+    border: 1px solid #000;
+    border-radius: 6px;
+    padding: 30px 40px;
+    width: 200px;
+    transition: transform 0.2s ease;
+    background-color: #fff;
+}
+
+    .card:hover {
+        transform: translateY(-5px);
+    }
+
+.icono {
+    background-color: #fff;
+    border: 1px solid #000;
+    border-radius: 50%;
+    width: 80px;
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 20px;
+    font-size: 36px;
+    color: #c67f00;
+    transition: background-color 0.3s ease, color 0.3s ease, transform 0.3s ease;
+}
+
+    .icono:hover {
+        background-color: #c67f00;
+        color: #fff;
+        transform: scale(1.1);
+    }
+
+.boton {
+    background-color: #c67f00;
+    color: #fff;
+    font-weight: 700;
+    border: none;
+    border-radius: 10px;
+    padding: 10px 20px;
+    font-size: 1rem;
+    cursor: pointer;
+    width: 100%;
+    transition: background-color 0.3s ease;
+}
+
+    .boton:hover {
+        background-color: #a56a00;
+    }
+
+/* enlaces <a> como botones*/
+.btn-card {
+    display: inline-block;
+    background-color: #c67f00;
+    color: #fff;
+    font-weight: 700;
+    border-radius: 10px;
+    padding: 10px 25px;
+    font-size: 1rem;
+    text-decoration: none;
+    cursor: pointer;
+    text-align: center;
+    transition: background-color 0.3s ease, transform 0.15s ease, box-shadow 0.15s ease;
+    box-shadow: none;
+    border: none;
+    margin: 0 auto; 
+    display: block; 
+    width: fit-content;
+}
+
+    .btn-card:hover {
+        background-color: #a56a00;
+        transform: scale(1.03);
+        box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+    }
+
+    .btn-card:active {
+        background-color: #8c5700;
+        transform: scale(0.99);
+    }
+
+
+@media (max-width: 600px) {
+    .boton {
+        font-size: 1rem;
+        padding: 12px 0;
+    }
+
+    .btn-card {
+        font-size: 1rem;
+        padding: 12px 0;
+    }
+}
+
+/* Responsivo*/
+@media (max-width: 900px) {
+    .contenedor-botones {
+        gap: 30px;
+    }
+
+    .card {
+        width: 180px;
+        padding: 25px 30px;
+    }
+
+    .icono {
+        width: 70px;
+        height: 70px;
+        font-size: 30px;
+    }
+}
+
+@media (max-width: 600px) {
+    .encabezado {
+        justify-content: center;
+        position: relative;
+    }
+
+    .btn-regresar {
+        position: absolute;
+        left: 15px;
+    }
+
+    .titulo {
+        font-size: 1.5rem;
+    }
+
+    .contenedor-botones {
+        flex-direction: column;
+        align-items: center;
+        gap: 25px;
+        margin-top: 30px;
+    }
+
+    .card {
+        width: 80%;
+        max-width: 300px;
+    }
+
+    .boton {
+        font-size: 1rem;
+        padding: 12px 0;
+    }
+}

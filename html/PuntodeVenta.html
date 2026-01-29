@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head runat="server">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<link href="../css/punto_venta.css" rel="stylesheet" />
+<link href="https://maxst.icons8.com/vue-static/landings/line-awesome/line-awesome/1.3.0/css/line-awesome.min.css" rel="stylesheet" />
+
+    <title>NeoVenta - Punto de venta</title>
+</head>
+<body>
+<!--Encabezado y boton regresar-->
+<header class="encabezado">
+    <a href="ventas.html" class="btn-regresar">
+        <i class="las la-arrow-left"></i>
+    </a>
+    <h1 class="titulo">NeoVenta</h1>
+</header>
+
+
+<!--Contenido principal-->
+    <main class="container">
+        <h2 class="subtitulo">Punto de venta</h2>
+        <div class="busqueda">
+            <label for="codigo">Código del Producto:</label>
+            <input type="text" id="codigo" placeholder="Ingrese el Código"/>
+            <button class="btn-agregar" type="button">Agregar</button>
+        </div>
+
+        <section class="tabla-container">
+            <table class="tabla">
+                <thead>
+                    <tr>
+                        <th>Código de Barras</th>
+                        <th>Descripción del Producto</th>
+                        <th>Precio</th>
+                        <th>Cantidad</th>
+                        <th>Importe</th>
+                        <th>Existencia</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!--Agregar tablas dinámicas-->
+                </tbody>
+            </table>
+        </section>
+
+        <div class="acciones">
+            <div class="acciones-izquierda">
+                <p>0 Productos</p>
+                <button class="btn gris">Cancelar</button>
+                <button class="btn rojo">Eliminar</button>
+                <button class="btn dorado">Cambiar</button>
+            </div>
+
+            <div class="acciones-derecha">
+                <div class="totales">
+                    <div><span id="total">Total:</span></div>
+                    <div><span>Págo con:</span> <br/>$0.00</div>
+                    <div><span>Cambio: </span> <br/>$0.00</div>
+                </div>
+                <div class="boton-cobrar">
+                    <button class="btn verde">Cobrar</button>
+                    <div class="monto-final">$0.00</div>
+                </div>
+            </div>
+        </div>
+    </main>
+    <script src="../js/puntoventa.js"></script>
+</body>
+</html>

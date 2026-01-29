@@ -1,0 +1,217 @@
+* { /*Aplica a todos los elementos*/
+    margin: 0; /*Elimina margin y padding dentro de la página*/
+    padding: 0;
+    box-sizing: border-box; /*Incluir padding y borde dentro de página*/
+    font-family: 'Inter', sans-serif; /*Fuente para todo*/
+}
+
+body {
+    background-color: #fff; /*Fonde blanco*/
+    color: #333; /*Color de texto*/
+}
+
+.encabezado {
+    display: flex;
+    align-items: center;
+    padding: 10px 20px;
+    border-bottom: 2px solid #c67f00;
+}
+
+.btn-regresar {
+    color: #c67f00; /*Color de texto*/
+    font-size: 24px; /*Tamaño de fuente*/
+    text-decoration: none; /*Quitar subrayado*/
+    margin-right: 10px; /*Separción del título*/
+}
+
+.titulo {
+    font-size: 1.8rem; /*Tamaño del titulo*/
+    font-weight: 700; /*Negrita*/
+    margin: 0 auto; /*Centrado horizontal*/
+    color: #000000;
+}
+
+.container {
+    padding: 20px 50px; /*Espacio interno vertical y horizontal*/
+}
+
+.subtitulo {
+    text-align: center; /*Centra "Punto de venta"*/
+    font-size: 1.6rem; /*Tamaño de texto*/
+    margin-bottom: 30px; /*Margen de separación hacia abajo*/
+}
+
+/*Contenedor del input y el botón "Agregar"*/
+.busqueda {
+    display: flex; /*Coloca elementos en línea*/
+    align-items: center; /*Centrado vertical*/
+    gap: 10px; /*Espacio entre el input y botón*/
+    margin-bottom: 20px; /*Margen de separación infeior*/
+}
+
+    /*Label de "Código de producto"*/
+    .busqueda label {
+        font-weight: 600; /*Negrita*/
+    }
+
+    .busqueda input {
+        width: 250px; /*Ancho del input*/
+        padding: 6px 8px; /*Padding interno*/
+        border: 1px solid #ccc; /*Borde*/
+        border-radius: 4px; /*Redondeo del input*/
+    }
+
+.btn-agregar {
+    background-color: #ccc; /*Fondo del boton regresar*/
+    border: none; /*Sin borde*/
+    padding: 6px 12px; /*Padding interno*/
+    cursor: pointer; /*Cursor puntero*/
+    border-radius: 4px; /*Redonde del borde*/
+    transition: background-color 0.2s; /*Transición de color al pasar el mouse*/
+}
+
+    .btn-agregar:hover {
+        background-color: #b5b5b5; /*Acción de color al pasar el mouse*/
+    }
+
+/*Contenedor de tabla*/
+.tabla-container {
+    border: 1px solid #d1a646; /*Borde de contenedor*/
+    margin-top: 10px; /*Margen de separacion de la parte de arriba*/
+    overflow-x: auto;
+}
+
+/*La tabla ocuopa todo el ancho y colapsan los bordes*/
+.tabla {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+    /*Encabezado de la tabla*/
+    .tabla thead {
+        background-color: #d1a646; /*Encabezado dorado*/
+        color: white; /*Texto blanco*/
+        font-weight: 600; /*Negrita*/
+    }
+
+    .tabla th,
+    .tabla td {
+        border: 1px solid #eee; /*Borde delgado*/
+        text-align: center; /*Texto centrado*/
+        padding: 10px; /*Padding interno*/
+    }
+
+/*Contenedor para las acciones*/
+.acciones {
+    display: flex;
+    justify-content: space-between; /*Separación entre ambos lados*/
+    align-items: flex-start;
+    margin-top: 20px; /*Margen de separación hacia arriba*/
+    flex-wrap: wrap; /*Para que los elementos se muevan a otra línea si no caben*/
+}
+
+.acciones-izquierda p {
+    margin-top: 10px; /*Margen de separacion hacia arriba de los elementos de arriba*/
+}
+
+/*Botones*/
+.btn {
+    border: none; /*Sin borde*/
+    color: white;
+    font-weight: 600; /*Negrita*/
+    padding: 8px 16px; /*Separacion interna*/
+    border-radius: 5px;
+    margin-right: 8px; /*Separacion hacia la derecha de cada boton*/
+    cursor: pointer;
+    transition: background-color 0.2s; /*Transicion de color al pasar el mouse*/
+}
+
+    .btn.gris {
+        background-color: #999;
+    }
+
+    .btn.rojo {
+        background-color: #c0392b;
+    }
+
+    .btn.dorado {
+        background-color: #c67f00;
+    }
+
+    .btn.verde {
+        background-color: #2d7a32;
+    }
+
+    .btn.gris:hover {
+        background-color: #7f7f7f;
+    }
+
+    .btn.rojo:hover {
+        background-color: #a5281b;
+    }
+
+    .btn.dorado:hover {
+        background-color: #a56a00;
+    }
+
+    .btn.verde:hover {
+        background-color: #256a2a;
+    }
+
+.acciones-derecha {
+    display: flex;
+    align-items: center;
+    gap: 20px
+}
+
+/*recuadros de total, Págo con y Cambio*/
+.totales div {
+    background-color: #d1a646; /*color de fondo*/
+    color: white; /*Texto*/
+    padding: 6px 12px; /*Separación interna*/
+    border-radius: 4px;
+    margin-bottom: 6px; /*Margen de separacion hacia abajo*/
+}
+
+/*Boton de cobrar y el monto estan alineados*/
+.boton-cobrar {
+    display: flex;
+    align-items: center; /*Centrar el texto dentro del contenedor*/
+    gap: 8px; /*Separacion de los elementos alineados*/
+}
+
+/*Recuadro del monto final*/
+.monto-final {
+    border: 2px solid #333; /*Borde*/
+    font-size: 1.4rem; /*Tamaño de los caracteres*/
+}
+
+/*Responsivo*/
+@media (max-width: 768px) { /*Si la pantalla es menor a 768px se aplican estos cambios*/
+    .container {
+        padding: 10px 20px; /*Pading del contenedor*/
+    }
+
+    /*Input*/
+    .busqueda {
+        flex-direction: column; /*Coloca el input abjo*/
+        align-items: flex-start; /*Coloca el input a la izquierda*/
+    }
+
+    /*Totales*/
+    .acciones {
+        flex-direction: column; /*Coloca los recuadros de los totales abajo y a la izquierda*/
+        gap: 20px; /*Separacion de los recuadros con los botones*/
+    }
+
+    /*Boton cobrar y tatal de compra*/
+    .acciones-derecha {
+        flex-direction: column; /*Coloca abajo el boton de compra y el total a pagar*/
+        align-items: flex-start; /*Lo coloca a la izaquierda*/
+    }
+
+    .monto-final {
+        width: 100%;
+        text-align: center;
+    }
+}

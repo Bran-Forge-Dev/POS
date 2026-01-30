@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head runat="server">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<link href="../css/catalogos.css" rel="stylesheet" />
+<link href="https://maxst.icons8.com/vue-static/landings/line-awesome/line-awesome/1.3.0/css/line-awesome.min.css" rel="stylesheet" />
+<title>NeoVenta - Catálogos</title>
+</head>
+<body>
+    <form id="form1" runat="server">
+        <header class="encabezado">
+            <!-- Botón regresar -->
+            <a href="menu.html" class="btn-regresar">
+                <i class="las la-arrow-left"></i>
+            </a>
+
+            <!-- Logo centrado -->
+            <div class="logo">NeoVenta</div>
+        </header>
+
+        <!-- Título principal -->
+        <h2 class="titulo">Catálogos</h2>
+
+        <main class="catalogos-container">
+            <!-- Tarjeta Usuarios -->
+            <div class="card">
+                <div class="icon-circle">
+                    <i class="las la-user fa-2x"></i>
+                </div>
+                <p>Vista de los usuarios</p>
+                <a href="ControlUsuarios.html" class="btn-card">Usuarios</a>
+            </div>
+
+            <!-- Tarjeta Productos -->
+            <div class="card">
+                <div class="icon-circle">
+                    <i class="las la-shopping-cart fa-2x"></i>
+                </div>
+                <p>Dar alta/baja/editar productos<br/>Visualización de productos</p>
+                <a href="productos.html" class="btn-card">Productos</a>
+            </div>
+
+            <!-- Tarjeta Proveedor -->
+            <div class="card">
+                <div class="icon-circle">
+                    <i class="las la-truck fa-2x"></i>
+                </div>
+                <p>Dar alta/baja/editar proveedores<br/>Visualización de proveedores</p>
+                <a href="proveedores.html" class="btn-card">Proveedor</a>
+            </div>
+        </main>
+    </form>
+</body>
+</html>

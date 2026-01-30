@@ -1,0 +1,149 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Inter', sans-serif;
+}
+
+/* ------------------------- */
+/*        ENCABEZADO        */
+/* ------------------------- */
+
+header {
+    display: flex;
+    justify-content: center; /* centra el logo/título */
+    align-items: center;
+    position: relative; /* permite posicionar el botón */
+    padding: 25px 40px;
+    border-bottom: 2px solid #c79a32;
+    background-color: #fff;
+}
+
+    /* Logo/Título principal dentro del header */
+    header .logo {
+        font-size: 28px;
+        font-weight: 700;
+        color: #000;
+        text-align: center;
+        flex: 1; /* asegura que quede centrado */
+    }
+
+/* Botón regresar con ícono */
+.btn-regresar {
+    position: absolute;
+    left: 15px;
+    color: #d1a646;
+    font-size: 28px;
+    text-decoration: none;
+    transition: color .2s ease;
+}
+
+    .btn-regresar:hover {
+        color: #b8891d;
+        transform: scale(1.1);
+    }
+
+/* ------------------------- */
+/*        TÍTULO H2         */
+/* ------------------------- */
+.titulo {
+    text-align: center;
+    margin-top: 30px;
+    font-size: 26px;
+    font-weight: 700;
+    color: #000;
+}
+
+/* ------------------------- */
+/*     CONTENEDOR CARDS     */
+/* ------------------------- */
+.catalogos-container {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 40px;
+    padding: 40px 20px;
+}
+
+/* ------------------------- */
+/*           CARD           */
+/* ------------------------- */
+.card {
+    border: 1px solid #000;
+    border-radius: 6px;
+    width: 280px;
+    text-align: center;
+    padding: 25px;
+    background: #fff;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+    .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+
+/* Icono circular */
+.icon-circle {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    border: 2px solid #c79a32;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 0 auto 15px;
+    color: #c79a32;
+    font-size: 36px;
+    background-color: #fff;
+    transition: all 0.3s ease;
+}
+
+    .icon-circle:hover {
+        background-color: #c79a32;
+        color: #fff;
+        transform: scale(1.1);
+    }
+
+/* Texto de descripción */
+.card p {
+    font-size: 15px;
+    color: #333;
+    margin-bottom: 18px;
+    line-height: 1.4;
+}
+
+/* Botón en cada card */
+.btn-card {
+    display: inline-block;
+    background-color: #c79a32;
+    color: white;
+    font-weight: bold;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 30px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: all 0.3s ease;
+    text-decoration: none;
+}
+
+    .btn-card:hover {
+        background-color: #a77e22;
+        transform: scale(1.05);
+    }
+
+/* ------------------------- */
+/*        RESPONSIVE        */
+/* ------------------------- */
+@media (max-width: 900px) {
+    .catalogos-container {
+        flex-direction: column;
+        align-items: center;
+        gap: 25px;
+    }
+
+    .card {
+        width: 85%;
+    }
+}

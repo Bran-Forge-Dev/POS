@@ -1,0 +1,175 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Inter', sans-serif;
+}
+
+/* Fondo */
+body {
+    background: white;
+    color: #333;
+}
+
+/* ---------------- ENCABEZADO ---------------- */
+.encabezado {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 12px 20px;
+    border-bottom: 2px solid #d1a646;
+    position: relative;
+}
+
+.btn-regresar {
+    position: absolute;
+    left: 15px;
+    color: #d1a646;
+    font-size: 28px;
+    text-decoration: none;
+    transition: color .2s ease;
+}
+
+    .btn-regresar:hover {
+        color: #b8891d;
+    }
+
+.logo {
+    font-size: 32px;
+    font-weight: bold;
+    letter-spacing: 2px;
+}
+
+/* ---------------- TÍTULO ---------------- */
+.titulo {
+    text-align: center;
+    margin: 25px 0;
+    font-size: 32px;
+    font-weight: 700;
+}
+
+/* ---------------- FORMULARIO ---------------- */
+
+/* CONTENEDOR GENERAL */
+.form-contenedor {
+    width: 80%;
+    margin: auto;
+    padding: 35px;
+    border: 3px solid #d1a646;
+    border-radius: 8px;
+}
+
+/* FILA NORMAL (label + input) */
+.fila {
+    display: flex;
+    align-items: center;
+    margin-bottom: 18px;
+}
+
+    .fila label {
+        width: 180px;
+        font-size: 17px;
+        font-weight: 500;
+    }
+
+    .fila input {
+        flex: 1;
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+        font-size: 16px;
+    }
+
+/* -------------------- */
+/* TELÉFONO + FECHA     */
+/* -------------------- */
+
+.fila-doble {
+    display: flex;
+    gap: 25px; /* separación entre ambas columnas */
+    margin-bottom: 18px;
+}
+
+.sub-fila {
+    flex: 1; /* cada subfila ocupa la mitad */
+    display: flex;
+    align-items: center;
+}
+
+    .sub-fila label {
+        width: 180px;
+        font-size: 17px;
+        font-weight: 500;
+    }
+
+    .sub-fila input {
+        flex: 1;
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+        font-size: 16px;
+    }
+
+/* -------------------- */
+/* RESPONSIVE */
+/* -------------------- */
+
+/* En pantallas pequeñas se apilan */
+@media (max-width: 1000px) {
+
+    .fila,
+    .fila-doble,
+    .sub-fila {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+        .fila label,
+        .sub-fila label {
+            width: 100%;
+            margin-bottom: 6px;
+        }
+
+        .fila input,
+        .sub-fila input {
+            width: 100%;
+        }
+
+    .fila-doble {
+        gap: 10px;
+    }
+}
+
+
+/* ---------------- BOTONES ---------------- */
+
+.botones {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    margin: 35px 0;
+}
+
+.btn-guardar,
+.btn-cancelar {
+    padding: 12px 28px;
+    font-size: 18px;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    background: #d1a646;
+    color: white;
+    transition: 0.2s ease;
+}
+
+.btn-cancelar {
+    background: #b46b3c;
+}
+
+.btn-guardar:hover {
+    background: #c59834;
+}
+
+.btn-cancelar:hover {
+    background: #9c5c30;
+}

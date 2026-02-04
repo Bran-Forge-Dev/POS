@@ -67,7 +67,7 @@ body {
 }
 
     .fila label {
-        width: 180px;
+        width: 140px;
         font-size: 17px;
         font-weight: 500;
     }
@@ -86,7 +86,7 @@ body {
 
 .fila-doble {
     display: flex;
-    gap: 25px; /* separación entre ambas columnas */
+    gap: 10px; /* separación entre ambas columnas */
     margin-bottom: 18px;
 }
 
@@ -97,7 +97,7 @@ body {
 }
 
     .sub-fila label {
-        width: 180px;
+        width: 140px;
         font-size: 17px;
         font-weight: 500;
     }
@@ -115,7 +115,7 @@ body {
 /* -------------------- */
 
 /* En pantallas pequeñas se apilan */
-@media (max-width: 1000px) {
+@media (max-width: 800px) {
 
     .fila,
     .fila-doble,

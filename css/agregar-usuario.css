@@ -7,17 +7,16 @@
 }
 
 body {
-    background: white;
+    background: #fff;
     color: #333;
-    line-height: 1.6;
 }
 
 /* ---------------- ENCABEZADO ---------------- */
 .encabezado {
     display: flex;
-    justify-content: center;
     align-items: center;
-    padding: 15px 20px;
+    justify-content: center;
+    padding: 12px 20px;
     border-bottom: 2px solid #d1a646;
     position: relative;
 }
@@ -25,178 +24,163 @@ body {
 .btn-regresar {
     position: absolute;
     left: 15px;
+    font-size: 26px;
     color: #d1a646;
-    font-size: 28px;
     text-decoration: none;
-    transition: color .2s ease;
+    transition: 0.2s;
 }
 
 .btn-regresar:hover {
-    color: #b8891d;
+    color: #c59834;
 }
 
 .logo {
-    font-size: clamp(24px, 5vw, 32px); /* Tamaño fluido según pantalla */
+    font-size: 32px;
     font-weight: bold;
-    letter-spacing: 2px;
 }
 
 /* ---------------- TÍTULO ---------------- */
 .titulo {
     text-align: center;
     margin: 30px 0;
-    font-size: clamp(22px, 4vw, 32px);
+    font-size: 32px;
     font-weight: 700;
 }
 
-/* ---------------- FORMULARIO ---------------- */
-
-.form-contenedor {
-    width: 90%;
-    max-width: 850px; /* Evita que se deforme en pantallas muy anchas */
-    margin: 0 auto 40px auto;
-    padding: 35px;
-    border: 3px solid #d1a646;
-    border-radius: 8px;
+/* ---------------- CONTENEDOR FORM ---------------- */
+.contenedor-form {
+    width: 80%;
+    margin: auto;
+    border: 2px solid #d1a646;
+    padding: 30px 40px;
 }
 
-/* Filas de formulario */
-.fila, .sub-fila {
+/* FORMULARIO */
+.formulario {
+    max-width: 700px;
+    margin: auto;
+}
+
+.fila {
     display: flex;
     align-items: center;
     margin-bottom: 18px;
+    gap: 15px;
 }
 
-.fila label, .sub-fila label {
-    width: 140px;
-    font-size: 17px;
+.fila label {
+    width: 180px; /* Ancho fijo para alinear etiquetas a la derecha */
+    text-align: right;
     font-weight: 500;
-    padding-right: 10px;
 }
 
-.fila input, .sub-fila input {
+.fila input {
     flex: 1;
-    padding: 12px;
+    padding: 6px 10px;
+    font-size: 15px;
     border: 1px solid #ccc;
-    border-radius: 6px;
-    font-size: 16px;
-    outline-color: #d1a646;
+    border-radius: 4px;
 }
 
-/* Contenedor de Teléfono + Fecha */
-.fila-doble {
-    display: flex;
-    gap: 20px;
-    margin-bottom: 18px;
-}
-
-.fila-doble .sub-fila {
-    flex: 1;
-    margin-bottom: 0;
-}
-
-/* ---------------- BOTONES ---------------- */
-.botones {
-    display: flex;
+/* FILA DOBLE (Para Teléfono y Fecha) */
+.fila.doble {
     justify-content: center;
+}
+
+.fila.doble > div {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 50%;
+}
+
+.fila.doble label {
+    width: auto; /* En fila doble el label no necesita los 180px */
+}
+
+/* ---------------- ACCIONES (BOTONES) ---------------- */
+.acciones {
+    width: 80%;
+    margin: 25px auto;
+    display: flex;
+    justify-content: flex-end; /* Alineados a la derecha como en productos */
     gap: 20px;
-    margin: 35px 0;
 }
 
-.btn-guardar,
-.btn-cancelar {
-    padding: 12px 35px;
-    font-size: 18px;
+.btn {
+    padding: 10px 30px;
+    font-size: 20px;
+    border-radius: 4px;
+    text-decoration: none;
     border: none;
-    border-radius: 12px;
     cursor: pointer;
+    font-weight: 500;
+    transition: 0.2s;
+}
+
+.guardar {
+    background: #d1a646;
     color: white;
-    transition: transform 0.1s, background 0.2s;
-    font-weight: 600;
 }
 
-.btn-guardar { background: #d1a646; }
-.btn-cancelar { background: #b46b3c; }
+.guardar:hover {
+    background: #c59834;
+}
 
-.btn-guardar:hover { background: #c59834; }
-.btn-cancelar:hover { background: #9c5c30; }
+.cancelar {
+    background: #d1a646;
+    color: white;
+}
 
-.btn-guardar:active, .btn-cancelar:active {
-    transform: scale(0.98);
+.cancelar:hover {
+    background: #c59834;
 }
 
 /* ------------------------------------------- */
-/* MEDIA QUERIES                 */
+/* RESPONSIVE (IDÉNTICO A PRODUCTOS)           */
 /* ------------------------------------------- */
 
-/* Tablets y Laptops pequeñas */
-@media (max-width: 992px) {
-    .form-contenedor {
-        width: 95%;
-        padding: 25px;
-    }
-}
-
-/* Móviles (Punto de quiebre principal) */
 @media (max-width: 768px) {
-    .form-contenedor {
+    .contenedor-form {
+        width: 95%;
         padding: 20px;
-        border-width: 2px;
     }
 
-    /* Convertir filas horizontales en verticales */
-    .fila, 
-    .fila-doble, 
-    .sub-fila {
+    .titulo {
+        font-size: 26px;
+    }
+
+    .fila {
         flex-direction: column;
         align-items: flex-start;
+        gap: 5px;
     }
 
-    .fila label, 
-    .sub-fila label {
+    .fila label {
         width: 100%;
-        margin-bottom: 8px;
+        text-align: left; /* Etiquetas a la izquierda en móvil */
     }
 
-    .fila input, 
-    .sub-fila input {
+    .fila input {
         width: 100%;
     }
 
-    /* Espaciado extra en la fila doble cuando se apila */
-    .fila-doble {
-        gap: 18px;
-    }
-
-    /* Botones en vertical para mejor accesibilidad táctil */
-    .botones {
+    .fila.doble {
         flex-direction: column;
-        width: 100%;
-        max-width: 300px;
-        margin: 30px auto;
     }
 
-    .btn-guardar,
-    .btn-cancelar {
+    .fila.doble > div {
+        width: 100%;
+    }
+
+    .acciones {
+        width: 95%;
+        justify-content: center; /* Botones centrados en móvil */
+        flex-direction: column-reverse; /* Opcional: cancelar abajo de guardar */
+    }
+
+    .btn {
         width: 100%;
         text-align: center;
-    }
-}
-
-/* Teléfonos muy pequeños */
-@media (max-width: 480px) {
-    .encabezado {
-        padding: 10px;
-    }
-    
-    .btn-regresar {
-        font-size: 22px;
-    }
-
-    .form-contenedor {
-        width: 100%;
-        border-left: none;
-        border-right: none;
-        border-radius: 0;
     }
 }

@@ -1,0 +1,158 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Inter', sans-serif;
+}
+
+body {
+    background: #fff;
+    color: #333;
+}
+
+/* ENCABEZADO */
+.encabezado {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 12px 20px;
+    border-bottom: 2px solid #d1a646;
+    position: relative;
+}
+
+.btn-regresar {
+    position: absolute;
+    left: 15px;
+    font-size: 26px;
+    color: #d1a646;
+    text-decoration: none;
+    transition: 0.2s;
+}
+
+.btn-regresar:hover {
+    color: #c59834;
+}
+
+.logo {
+    font-size: 32px;
+    font-weight: bold;
+}
+
+/* TÍTULO */
+.titulo {
+    text-align: center;
+    margin: 30px 0;
+    font-size: 32px;
+    font-weight: 700;
+}
+
+/* CONTENEDOR FORM */
+.contenedor-form {
+    width: 80%;
+    margin: auto;
+    border: 2px solid #d1a646;
+    padding: 30px 40px;
+}
+
+/* FORMULARIO */
+.formulario {
+    max-width: 700px;
+    margin: auto;
+}
+
+.fila {
+    display: flex;
+    align-items: center;
+    margin-bottom: 18px;
+    gap: 15px;
+}
+
+.fila label {
+    width: 180px;
+    text-align: right;
+    font-weight: 500;
+}
+
+.fila input {
+    flex: 1;
+    padding: 6px 10px;
+    font-size: 15px;
+}
+
+/* FILA DOBLE */
+.fila.doble {
+    justify-content: center;
+}
+
+.fila.doble > div {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 50%;
+}
+
+.fila.doble label {
+    width: auto;
+}
+
+/* BOTONES */
+.acciones {
+    width: 80%;
+    margin: 25px auto;
+    display: flex;
+    justify-content: flex-end;
+    gap: 20px;
+}
+
+.btn {
+    padding: 10px 30px;
+    font-size: 20px;
+    border-radius: 4px;
+    text-decoration: none;
+    border: none;
+    cursor: pointer;
+}
+
+.guardar {
+    background: #d1a646;
+    color: white;
+}
+
+.guardar:hover {
+    background: #c59834;
+}
+
+.cancelar {
+    background: #d1a646;
+    color: white;
+}
+
+.cancelar:hover {
+    background: #c59834;
+}
+
+/* RESPONSIVE */
+@media (max-width: 768px) {
+
+    .contenedor-form {
+        width: 95%;
+    }
+
+    .fila {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .fila label {
+        width: 100%;
+        text-align: left;
+    }
+
+    .fila.doble {
+        flex-direction: column;
+    }
+
+    .fila.doble > div {
+        width: 100%;
+    }
+}

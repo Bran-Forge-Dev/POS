@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NeoVenta - Agregar Producto</title>
+
+    <!-- CSS -->
+    <link href="../css/agregar-producto.css" rel="stylesheet">
+
+    <!-- Line Awesome -->
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/line-awesome/1.3.0/line-awesome/css/line-awesome.min.css">
+</head>
+<body>
+
+<!-- ENCABEZADO -->
+<header class="encabezado">
+    <a href="productos.html" class="btn-regresar">
+        <i class="las la-arrow-left"></i>
+    </a>
+    <h1 class="logo">NeoVenta</h1>
+</header>
+
+<!-- TÍTULO -->
+<h2 class="titulo">Agregar Producto</h2>
+
+<!-- FORMULARIO -->
+<div class="contenedor-form">
+    <form id="formProducto" class="formulario">
+
+        <div class="fila">
+            <label>Código del Producto:</label>
+            <input type="text" id="codigo" required>
+        </div>
+
+        <div class="fila">
+            <label>Descripción:</label>
+            <input type="text" id="descripcion" required>
+        </div>
+
+        <div class="fila doble">
+            <div>
+                <label>Precio costo:</label>
+                <input type="number" id="costo" step="0.01" min="0" value="0.00" required>
+            </div>
+
+            <div>
+                <label>Precio venta:</label>
+                <input type="number" id="venta" step="0.01" min="0" value="0.00" required>
+            </div>
+        </div>
+
+        <div class="fila doble">
+            <div>
+                <label>Precio mayoreo:</label>
+                <input type="number" id="mayoreo" step="0.01" min="0" value="0.00" required>
+            </div>
+
+            <div>
+                <label>Cantidad actual:</label>
+                <input type="number" id="cantidad" step="1" min="0" value="0" required>
+            </div>
+        </div>
+
+        <div class="fila">
+            <label>Mínimo:</label>
+            <input type="number" id="minimo" step="1" min="0" value="0">
+        </div>
+
+    </form>
+</div>
+
+<!-- BOTONES -->
+<div class="acciones">
+    <button class="btn guardar" type="submit" form="formProducto">Guardar</button>
+    <a href="productos.html" class="btn cancelar">Cancelar</a>
+</div>
+
+<script src="../js/agregar-producto.js"></script>
+</body>
+</html>

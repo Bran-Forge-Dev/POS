@@ -162,7 +162,7 @@ body {
 }
 
 /* ================= RESPONSIVE ================= */
-@media (max-width: 900px) {
+@media (max-width: 800px) {
     .logo,
     .titulo {
         font-size: 26px;

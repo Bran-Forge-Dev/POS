@@ -1,0 +1,198 @@
+/* ================= RESET ================= */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Inter', sans-serif;
+}
+
+body {
+    background-color: #ffffff;
+    color: #333;
+}
+
+/* ================= ENCABEZADO ================= */
+.encabezado {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 12px 20px;
+    border-bottom: 2px solid #d1a646;
+    position: relative;
+}
+
+.logo {
+    font-size: 32px;
+    font-weight: bold;
+    letter-spacing: 2px;
+}
+
+.btn-regresar {
+    position: absolute;
+    left: 15px;
+    color: #d1a646;
+    font-size: 26px;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    transition: 0.2s ease;
+}
+
+.btn-regresar:hover {
+    color: #b8891d;
+}
+
+/* ================= TÍTULO ================= */
+.titulo {
+    text-align: center;
+    margin: 30px 0 20px 0;
+    font-size: 30px;
+    font-weight: 700;
+}
+
+/* ================= BOTÓN AGREGAR ================= */
+.contenedor-agregar {
+    width: 90%;
+    margin: 0 auto 15px auto;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.btn-agregar {
+    background-color: #d1a646;
+    color: #ffffff;
+    border: none;
+    padding: 12px 22px;
+    font-size: 18px;
+    border-radius: 14px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    gap: 8px;
+    transition: 0.2s ease;
+}
+
+.btn-agregar i {
+    font-size: 22px;
+}
+
+.btn-agregar:hover {
+    background-color: #c59834;
+}
+
+/* ================= TABLA ================= */
+.tabla-scroll {
+    width: 90%;
+    margin: auto;
+    overflow-x: auto;
+    background: #fffaf0;
+    border-radius: 14px;
+    padding: 15px;
+    box-shadow: 0 0 20px rgba(210, 158, 61, 0.25);
+}
+
+.tabla-productos {
+    width: 100%;
+    min-width: 900px;
+    border-collapse: separate;
+    border-spacing: 0;
+    text-align: center;
+}
+
+/* ================= ENCABEZADO TABLA ================= */
+.tabla-productos thead th {
+    background-color: #d6a63b;
+    color: #ffffff;
+    padding: 14px 16px;
+    font-size: 15px;
+    font-weight: 600;
+    position: relative;
+}
+
+/* Separaciones entre encabezados */
+.tabla-productos thead th:not(:last-child)::after {
+    content: "";
+    position: absolute;
+    right: 0;
+    top: 15%;
+    height: 70%;
+    width: 1px;
+    background-color: rgba(255, 255, 255, 0.45);
+}
+
+/* Bordes redondeados encabezado */
+.tabla-productos thead th:first-child {
+    border-top-left-radius: 10px;
+}
+
+.tabla-productos thead th:last-child {
+    border-top-right-radius: 10px;
+}
+
+/* ================= BODY TABLA ================= */
+.tabla-productos tbody {
+    background: transparent;
+}
+
+.tabla-productos tbody tr {
+    height: 48px;
+}
+
+/* SIN líneas ni bordes */
+.tabla-productos tbody td {
+    border: none;
+    padding: 12px;
+}
+
+/* ================= ICONOS ================= */
+.col-icono {
+    width: 80px;
+}
+
+.icono-tabla {
+    font-size: 26px;
+    color: #c67f00;
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+.icono-tabla:hover {
+    color: #a56a00;
+}
+
+/* ================= RESPONSIVE ================= */
+@media (max-width: 900px) {
+    .logo,
+    .titulo {
+        font-size: 26px;
+    }
+
+    .btn-agregar {
+        font-size: 16px;
+        padding: 10px 18px;
+    }
+
+    .btn-agregar i {
+        font-size: 20px;
+    }
+}
+
+@media (max-width: 600px) {
+    .logo,
+    .titulo {
+        font-size: 22px;
+    }
+}
+
+@media (max-width: 430px) {
+    .logo,
+    .titulo {
+        font-size: 20px;
+    }
+
+    .btn-agregar {
+        font-size: 14px;
+        padding: 8px 14px;
+    }
+}

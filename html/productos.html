@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NeoVenta - Productos</title>
+
+    <!-- CSS -->
+    <link href="../css/productos.css" rel="stylesheet">
+
+    <!-- Line Awesome -->
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/line-awesome/1.3.0/line-awesome/css/line-awesome.min.css">
+</head>
+<body>
+
+    <!-- ENCABEZADO -->
+    <header class="encabezado">
+        <a href="menu.html" class="btn-regresar">
+            <i class="las la-arrow-left"></i>
+        </a>
+        <h1 class="logo">NeoVenta</h1>
+    </header>
+
+    <!-- TÍTULO -->
+    <h2 class="titulo">Productos</h2>
+
+    <!-- BOTÓN AGREGAR -->
+    <div class="contenedor-agregar">
+        <a href="agregar-producto.html" class="btn-agregar">
+            <i class="las la-plus-square"></i>
+            Agregar
+        </a>
+    </div>
+
+    <!-- TABLA -->
+    <div class="tabla-scroll">
+        <table class="tabla-productos">
+
+            <!-- ENCABEZADO -->
+            <thead>
+                <tr>
+                    <th>Código del producto</th>
+                    <th>Descripción</th>
+                    <th>Precio costo</th>
+                    <th>Precio venta</th>
+                    <th>Precio mayoreo</th>
+                    <th>Cantidad actual</th>
+                    <th>Eliminar</th>
+                    <th>Editar</th>
+                </tr>
+            </thead>
+
+            <!-- CUERPO -->
+            <tbody id="tablaProductosBody">
+                <!-- Se llena dinámicamente desde localStorage -->
+            </tbody>
+
+        </table>
+    </div>
+
+    <script src="../js/productos.js"></script>
+
+</body>
+</html>

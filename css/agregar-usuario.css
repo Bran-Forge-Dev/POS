@@ -126,7 +126,7 @@ body {
 }
 
 /* ------------------------------------------- */
-/* MEDIA QUERIES                 */
+/* MEDIA QUERIES (MODIFICACIÓN OPTIMIZADA)     */
 /* ------------------------------------------- */
 
 /* Tablets y Laptops pequeñas */
@@ -144,23 +144,26 @@ body {
         border-width: 2px;
     }
 
-    /* Convertir filas horizontales en verticales */
+    /* Convertir filas horizontales en verticales y resetear flex */
     .fila, 
     .fila-doble, 
     .sub-fila {
         flex-direction: column;
-        align-items: flex-start;
+        align-items: stretch; /* Cambiado de flex-start a stretch para que el input llene el ancho */
+        display: flex;
     }
 
     .fila label, 
     .sub-fila label {
         width: 100%;
-        margin-bottom: 8px;
+        margin-bottom: 5px;
+        padding-right: 0; /* Elimina espacio lateral innecesario en móvil */
     }
 
     .fila input, 
     .sub-fila input {
-        width: 100%;
+        width: 100% !important; /* Asegura el ancho total */
+        flex: none; /* Desactiva el flex-grow del escritorio */
     }
 
     /* Espaciado extra en la fila doble cuando se apila */
@@ -168,18 +171,25 @@ body {
         gap: 18px;
     }
 
+    /* Forzar que las sub-filas dentro de fila-doble ocupen todo el ancho */
+    .fila-doble .sub-fila {
+        width: 100%;
+    }
+
     /* Botones en vertical para mejor accesibilidad táctil */
     .botones {
         flex-direction: column;
-        width: 100%;
+        width: 90%;
         max-width: 300px;
         margin: 30px auto;
+        gap: 15px;
     }
 
     .btn-guardar,
     .btn-cancelar {
         width: 100%;
         text-align: center;
+        padding: 15px; /* Un poco más de área táctil */
     }
 }
 
@@ -190,7 +200,7 @@ body {
     }
     
     .btn-regresar {
-        font-size: 22px;
+        font-size: 24px;
     }
 
     .form-contenedor {
@@ -198,5 +208,6 @@ body {
         border-left: none;
         border-right: none;
         border-radius: 0;
+        padding: 15px;
     }
 }

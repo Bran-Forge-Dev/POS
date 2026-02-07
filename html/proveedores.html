@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>NeoVenta - Proveedores</title>
+
+    <link rel="stylesheet" href="../css/proveedores.css">
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/line-awesome/1.3.0/line-awesome/css/line-awesome.min.css">
+</head>
+<body>
+
+<header class="encabezado">
+    <a href="Catalogos.html" class="btn-regresar">
+        <i class="las la-arrow-left"></i>
+    </a>
+    <h1 class="logo">NeoVenta</h1>
+</header>
+
+<div class="header-seccion">
+    <h1 class="titulo">Proveedores</h1>
+
+    <div class="header-acciones">
+        <a href="agregar-proveedor.html" class="btn-agregar">
+            <i class="las la-plus-square"></i> Agregar
+        </a>
+    </div>
+</div>
+
+<div class="tabla-contenedor">
+    <div class="tabla-scroll">
+        <table class="tabla-proveedores">
+            <thead>
+                <tr>
+                    <th>Código del proveedor</th>
+                    <th>Nombre del proveedor</th>
+                    <th>Razón social</th>
+                    <th>Teléfono</th>
+                    <th>Dirección</th>
+                    <th>Correo</th>
+                    <th>Eliminar</th>
+                    <th>Editar</th>
+                </tr>
+            </thead>
+
+            <tbody id="tablaProveedores">
+                <!-- Filas dinámicas desde LocalStorage -->
+            </tbody>
+        </table>
+
+        <!-- Mensaje cuando no hay proveedores -->
+        <p id="sinProveedores" class="mensaje-vacio">
+            No hay proveedores registrados
+        </p>
+    </div>
+</div>
+
+<script src="../js/proveedores.js"></script>
+</body>
+</html>

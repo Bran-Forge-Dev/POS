@@ -1,0 +1,161 @@
+/* ===============================
+   RESET
+=============================== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Inter', sans-serif;
+}
+
+body {
+    background-color: #fff;
+    color: #333;
+}
+
+/* ===============================
+   ENCABEZADO
+=============================== */
+.encabezado {
+    display: flex;
+    align-items: center;
+    padding: 12px 20px;
+    border-bottom: 2px solid #d4a338;
+}
+
+.logo {
+    margin: auto;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+.btn-regresar {
+    color: #d4a338;
+    font-size: 26px;
+    text-decoration: none;
+}
+
+/* ===============================
+   TÍTULO + BOTÓN (MISMO ASPECTO QUE PRODUCTOS)
+=============================== */
+.header-seccion {
+    max-width: 1250px;
+    margin: 0 auto;
+    padding: 30px 20px 20px;
+
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* Título arriba y centrado */
+.titulo {
+    font-size: 32px;
+    font-weight: bold;
+    text-align: center;
+}
+
+/* Contenedor del botón */
+.header-acciones {
+    display: flex;
+    justify-content: flex-end;
+}
+
+/* Botón */
+.btn-agregar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background-color: #d1a646;
+    color: #fff;
+    padding: 12px 22px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-size: 18px;
+    transition: background 0.2s ease;
+}
+
+.btn-agregar:hover {
+    background-color: #c59834;
+}
+
+.btn-agregar i {
+    font-size: 22px;
+}
+
+/* ===============================
+   TABLA CONTENEDOR
+=============================== */
+.tabla-contenedor {
+    max-width: 1250px;
+    margin: 0 auto;
+    padding: 0 20px 40px;
+}
+
+/* Scroll SOLO para la tabla */
+.tabla-scroll {
+    width: 100%;
+    overflow-x: auto;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+}
+
+/* ===============================
+   TABLA
+=============================== */
+.tabla-proveedores {
+    width: 100%;
+    min-width: 1200px;
+    border-collapse: separate;
+    border-spacing: 0;
+    background-color: #fff;
+}
+
+/* ===============================
+   ENCABEZADO TABLA
+=============================== */
+.tabla-proveedores thead th {
+    background-color: #d4a338;
+    color: #fff;
+    text-align: left;
+    padding: 14px;
+    font-weight: 500;
+    border-right: 1px solid rgba(255,255,255,0.3);
+    white-space: nowrap;
+}
+
+.tabla-proveedores thead th:last-child {
+    border-right: none;
+}
+
+/* ===============================
+   CUERPO TABLA
+=============================== */
+.tabla-proveedores tbody td {
+    padding: 14px;
+    border-bottom: 1px solid #f1e6c8;
+    border-right: 1px solid #f1e6c8;
+    white-space: nowrap;
+}
+
+.tabla-proveedores tbody td:last-child {
+    border-right: none;
+}
+
+.tabla-proveedores tbody tr:hover {
+    background-color: #fff7e1;
+}
+
+/* ===============================
+   RESPONSIVE
+=============================== */
+@media (max-width: 768px) {
+
+    .titulo {
+        font-size: 26px;
+    }
+
+    .header-acciones {
+        justify-content: flex-end;
+    }
+}

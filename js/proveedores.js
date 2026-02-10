@@ -1,9 +1,20 @@
-const tablaBody = document.getElementById("tablaProveedoresBody");
+// Cambiamos "tablaProveedoresBody" por "tablaProveedores" para que coincida con tu HTML
+const tablaBody = document.getElementById("tablaProveedores"); 
 
 let proveedores = JSON.parse(localStorage.getItem("proveedores")) || [];
 
 function renderTabla() {
+    // Si no hay proveedores, podrías mostrar el mensaje de "No hay proveedores registrados"
+    const mensajeVacio = document.getElementById("sinProveedores");
+    
+    if (proveedores.length === 0) {
+        mensajeVacio.style.display = "block";
+    } else {
+        mensajeVacio.style.display = "none";
+    }
+
     tablaBody.innerHTML = "";
+    // ... resto de tu código igual
 
     proveedores.forEach((prov, index) => {
         const fila = document.createElement("tr");

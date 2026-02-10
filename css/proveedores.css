@@ -19,64 +19,69 @@ body {
 .encabezado {
     display: flex;
     align-items: center;
+    justify-content: center;
     padding: 12px 20px;
-    border-bottom: 2px solid #d4a338;
-}
-
-.logo {
-    margin: auto;
-    font-size: 28px;
-    font-weight: bold;
+    border-bottom: 2px solid #d1a646;
+    position: relative;
 }
 
 .btn-regresar {
-    color: #d4a338;
-    font-size: 26px;
+    position: absolute;
+    left: 15px;
+    color: #d1a646;
+    display: flex;
+    align-items: center;
     text-decoration: none;
+    font-size: 25px;
+    border: none;
+    background: transparent;
+    transition: color 0.2s ease;
+}
+
+.btn-regresar:hover {
+    color: #c59834;
+}
+
+.logo {
+    font-size: 32px;
+    font-weight: bold;
+    letter-spacing: 2px;
 }
 
 /* ===============================
-   TÍTULO + BOTÓN (MISMO ASPECTO QUE PRODUCTOS)
+   TÍTULO + ACCIONES
 =============================== */
-.header-seccion {
-    max-width: 1250px;
-    margin: 0 auto;
-    padding: 30px 20px 20px;
-
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-}
-
-/* Título arriba y centrado */
 .titulo {
-    font-size: 32px;
-    font-weight: bold;
     text-align: center;
+    margin-top: 25px;
+    font-size: 30px;
+    font-weight: 700;
 }
 
-/* Contenedor del botón */
 .header-acciones {
+    width: 90%;
+    margin: 20px auto 10px auto;
     display: flex;
     justify-content: flex-end;
 }
 
-/* Botón */
 .btn-agregar {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    background-color: #d1a646;
-    color: #fff;
+    background: #d1a646;
+    color: white;
+    border: none;
     padding: 12px 22px;
-    border-radius: 8px;
-    text-decoration: none;
     font-size: 18px;
-    transition: background 0.2s ease;
+    border-radius: 12px;
+    cursor: pointer;
+    display: inline-flex;
+    gap: 8px;
+    align-items: center;
+    transition: 0.2s ease;
+    text-decoration: none;
 }
 
 .btn-agregar:hover {
-    background-color: #c59834;
+    background: #c59834;
 }
 
 .btn-agregar i {
@@ -87,59 +92,41 @@ body {
    TABLA CONTENEDOR
 =============================== */
 .tabla-contenedor {
-    max-width: 1250px;
-    margin: 0 auto;
-    padding: 0 20px 40px;
+    width: 100%;
+    padding: 20px 0;
 }
 
-/* Scroll SOLO para la tabla */
 .tabla-scroll {
-    width: 100%;
+    width: 90%;
+    margin: auto;
     overflow-x: auto;
     border-radius: 10px;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+    box-shadow: 0 0 20px rgba(210, 158, 61, 0.3);
+    padding: 15px;
+    background: white;
 }
 
 /* ===============================
-   TABLA
+   TABLA PROVEEDORES
 =============================== */
 .tabla-proveedores {
     width: 100%;
-    min-width: 1200px;
-    border-collapse: separate;
-    border-spacing: 0;
-    background-color: #fff;
+    min-width: 1000px;
+    border-collapse: collapse;
+    text-align: center;
 }
 
-/* ===============================
-   ENCABEZADO TABLA
-=============================== */
-.tabla-proveedores thead th {
-    background-color: #d4a338;
-    color: #fff;
-    text-align: left;
-    padding: 14px;
-    font-weight: 500;
-    border-right: 1px solid rgba(255,255,255,0.3);
+.tabla-proveedores thead {
+    background-color: #d1a646;
+    color: white;
+}
+
+.tabla-proveedores th,
+.tabla-proveedores td {
+    padding: 12px;
+    border: 1px solid #f2d9a2;
+    height: 42px;
     white-space: nowrap;
-}
-
-.tabla-proveedores thead th:last-child {
-    border-right: none;
-}
-
-/* ===============================
-   CUERPO TABLA
-=============================== */
-.tabla-proveedores tbody td {
-    padding: 14px;
-    border-bottom: 1px solid #f1e6c8;
-    border-right: 1px solid #f1e6c8;
-    white-space: nowrap;
-}
-
-.tabla-proveedores tbody td:last-child {
-    border-right: none;
 }
 
 .tabla-proveedores tbody tr:hover {
@@ -147,15 +134,36 @@ body {
 }
 
 /* ===============================
-   RESPONSIVE
+   ESTILOS COPIADOS: ICONOS
 =============================== */
-@media (max-width: 768px) {
+.tabla-proveedores td i {
+    font-size: 26px;      /* Estilo copiado */
+    color: #c67f00;      /* Estilo copiado */
+    cursor: pointer;     /* Estilo copiado */
+    transition: 0.2s ease;
+}
 
-    .titulo {
-        font-size: 26px;
-    }
+.tabla-proveedores td i:hover {
+    color: #a56a00;      /* Estilo copiado */
+    transform: scale(1.1);
+}
 
-    .header-acciones {
-        justify-content: flex-end;
-    }
+/* ---------------- MENSAJE VACÍO ---------------- */
+.mensaje-vacio {
+    text-align: center;
+    padding: 20px;
+    font-size: 18px;
+    color: #888;
+}
+
+/* ===============================
+   RESPONSIVIDAD
+=============================== */
+@media (max-width: 900px) {
+    .logo, .titulo { font-size: 26px; }
+    .btn-agregar { font-size: 16px; padding: 10px 18px; }
+}
+
+@media (max-width: 600px) {
+    .logo, .titulo { font-size: 22px; }
 }

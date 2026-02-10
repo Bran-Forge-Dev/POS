@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>NeoVenta - Agregar Proveedor</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link href="../css/agregar-proveedor.css" rel="stylesheet">
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/line-awesome/1.3.0/line-awesome/css/line-awesome.min.css">
+</head>
+<body>
+
+<header class="encabezado">
+    <a href="proveedores.html" class="btn-regresar">
+        <i class="las la-arrow-left"></i>
+    </a>
+    <h1 class="logo">NeoVenta</h1>
+</header>
+
+<h2 class="titulo">Agregar Proveedor</h2>
+
+<form class="formulario" id="formProveedor">
+
+    <div class="campo">
+        <label>Código del Proveedor:</label>
+        <input type="text" id="codigo" required>
+    </div>
+
+    <div class="campo">
+        <label>Nombre del proveedor:</label>
+        <input type="text" id="nombre" required>
+    </div>
+
+    <div class="campo">
+        <label>Razón social:</label>
+        <input type="text" id="razon" required>
+    </div>
+
+    <div class="fila-doble">
+        <div class="campo">
+            <label>Teléfono:</label>
+            <input type="text" id="telefono">
+        </div>
+
+        <div class="campo">
+            <label>Correo electrónico:</label>
+            <input type="email" id="correo">
+        </div>
+    </div>
+
+    <div class="campo">
+        <label>Dirección:</label>
+        <textarea id="direccion" rows="4"></textarea>
+    </div>
+
+    <div class="contenedor-botones">
+        <button type="submit" class="btn-guardar">Guardar</button>
+        <a href="proveedores.html" class="btn-cancelar">Cancelar</a>
+    </div>
+</form>
+
+<script src="../js/agregar-proveedor.js"></script>
+</body>
+</html>

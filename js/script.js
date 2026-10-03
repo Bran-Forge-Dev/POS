@@ -29,7 +29,8 @@ document.addEventListener("DOMContentLoaded", async function () {
         if (!error) {
             window.location.href = "html/menu.html";
         } else {
-            mensajeError.textContent = "Usuario o contraseña incorrectos.";
+            console.error("Error de login:", error.message);
+            mensajeError.textContent = "Usuario o contraseña incorrectos. (" + error.message + ")";
             mensajeError.style.display = "block";
 
             // Borra los campos y regresa el cursor al usuario

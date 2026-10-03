@@ -3,7 +3,8 @@ document.addEventListener("DOMContentLoaded", async function () {
     const perfil = await getPerfil();
     const usuarioSpan = document.getElementById("usuario-activo");
     if (perfil && usuarioSpan) {
-        usuarioSpan.textContent = `${perfil.cuenta} · ${perfil.rol}`;
+        const tienda = perfil.pos_tiendas ? ` · ${perfil.pos_tiendas.nombre}` : "";
+        usuarioSpan.textContent = `${perfil.cuenta} · ${perfil.rol}${tienda}`;
     }
 
     // Selecciona el enlace Cerrar sesión

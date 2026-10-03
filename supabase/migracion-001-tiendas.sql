@@ -1,18 +1,11 @@
 -- ============================================================
--- NeoVenta POS — Esquema multi-tienda (Supabase)
--- Ejecutar completo en: SQL Editor del proyecto en supabase.com
---
--- Multi-tenancy: cada usuario pertenece a una tienda y solo ve
--- sus datos. El RLS hace la separación, no el cliente.
--- 'superadmin' opera entre tiendas (tienda_id null).
---
--- Prefijo pos_ para coexistir con otras apps del mismo proyecto
--- (p. ej. inv_* de inventario).
+-- Migración 001 — Multi-tenancy (ejecutar UNA VEZ si la base
+-- ya tiene el esquema anterior sin tiendas).
+-- Convierte los datos existentes en la tienda 'Principal'.
+-- Idempotente: se puede re-correr sin romper nada.
 -- ============================================================
 
--- ---------- TABLAS ----------
-
--- Una tienda = un tenant. es_demo marca la tienda del demo público.
+-- 1. Tabla de tiendas + tienda principal
 create table if not exists pos_tiendas (
     id uuid primary key default gen_random_uuid(),
     nombre text not null,
@@ -20,97 +13,50 @@ create table if not exists pos_tiendas (
     created_at timestamptz not null default now()
 );
 
--- Perfil de usuario ligado a auth.users (cuenta + rol + tienda).
--- cuenta es única GLOBAL (es el login: cuenta@neoventa.local).
--- superadmin es el único rol sin tienda (opera entre tiendas).
-create table if not exists pos_perfiles (
-    id uuid primary key references auth.users(id) on delete cascade,
-    tienda_id uuid references pos_tiendas(id),
-    cuenta text not null unique,
-    rol text not null default 'cajero' check (rol in ('admin', 'cajero', 'superadmin')),
-    telefono text default '',
-    correo text default '',
-    fecha_nacimiento date,
-    created_at timestamptz not null default now(),
-    check (tienda_id is not null or rol = 'superadmin')
-);
+insert into pos_tiendas (nombre)
+select 'Principal' where not exists (select 1 from pos_tiendas);
 
-create table if not exists pos_productos (
-    id bigint generated always as identity primary key,
-    tienda_id uuid not null references pos_tiendas(id),
-    codigo text not null,
-    descripcion text not null,
-    costo numeric(10,2) not null default 0 check (costo >= 0),
-    venta numeric(10,2) not null default 0 check (venta >= 0),
-    mayoreo numeric(10,2) not null default 0 check (mayoreo >= 0),
-    cantidad integer not null default 0 check (cantidad >= 0),
-    minimo integer not null default 0,
-    created_at timestamptz not null default now(),
-    -- el código se repite entre tiendas, único solo dentro de cada una
-    unique (tienda_id, codigo)
-);
+-- 2. Columna tienda_id en las tablas que la necesitan
+alter table pos_perfiles    add column if not exists tienda_id uuid references pos_tiendas(id);
+alter table pos_productos   add column if not exists tienda_id uuid references pos_tiendas(id);
+alter table pos_proveedores add column if not exists tienda_id uuid references pos_tiendas(id);
+alter table pos_ventas      add column if not exists tienda_id uuid references pos_tiendas(id);
 
-create table if not exists pos_proveedores (
-    id bigint generated always as identity primary key,
-    tienda_id uuid not null references pos_tiendas(id),
-    codigo text not null,
-    nombre text not null,
-    razon text default '',
-    telefono text default '',
-    direccion text default '',
-    correo text default '',
-    created_at timestamptz not null default now(),
-    unique (tienda_id, codigo)
-);
+-- 3. Rol superadmin + regla: solo superadmin puede no tener tienda
+alter table pos_perfiles drop constraint if exists pos_perfiles_rol_check;
+alter table pos_perfiles add constraint pos_perfiles_rol_check
+    check (rol in ('admin', 'cajero', 'superadmin'));
+alter table pos_perfiles drop constraint if exists pos_perfiles_tienda_check;
+alter table pos_perfiles add constraint pos_perfiles_tienda_check
+    check (tienda_id is not null or rol = 'superadmin');
 
--- Encabezado de venta; el folio ES la llave primaria (global,
--- no reinicia por tienda — para folios por tienda haría falta
--- una secuencia por tenant, overkill por ahora)
-create table if not exists pos_ventas (
-    folio bigint generated always as identity primary key,
-    tienda_id uuid not null references pos_tiendas(id),
-    cajero_id uuid not null references auth.users(id),
-    fecha timestamptz not null default now(),
-    total numeric(12,2) not null check (total >= 0),
-    pago numeric(12,2) not null check (pago >= 0),
-    cambio numeric(12,2) not null check (cambio >= 0)
-);
+-- 4. Backfill: todo lo existente pasa a la tienda 'Principal'
+update pos_perfiles    set tienda_id = (select id from pos_tiendas order by created_at limit 1) where tienda_id is null and rol <> 'superadmin';
+update pos_productos   set tienda_id = (select id from pos_tiendas order by created_at limit 1) where tienda_id is null;
+update pos_proveedores set tienda_id = (select id from pos_tiendas order by created_at limit 1) where tienda_id is null;
+update pos_ventas      set tienda_id = (select id from pos_tiendas order by created_at limit 1) where tienda_id is null;
 
--- Detalle: copia codigo/descripcion/precio para conservar
--- el histórico aunque el producto cambie o se borre después.
--- Su tienda se hereda de la venta padre (join en las políticas).
-create table if not exists pos_detalle_venta (
-    id bigint generated always as identity primary key,
-    venta_id bigint not null references pos_ventas(folio) on delete cascade,
-    producto_id bigint references pos_productos(id) on delete set null,
-    codigo text not null,
-    descripcion text not null,
-    precio numeric(10,2) not null,
-    cantidad integer not null check (cantidad > 0)
-);
+-- 5. NOT NULL donde aplica (perfiles queda nullable por superadmin)
+alter table pos_productos   alter column tienda_id set not null;
+alter table pos_proveedores alter column tienda_id set not null;
+alter table pos_ventas      alter column tienda_id set not null;
 
--- ---------- FUNCIONES DE ROL / TENANT ----------
+-- 6. El código pasa a ser único por tienda (dos tiendas pueden
+--    tener productos con el mismo código)
+alter table pos_productos   drop constraint if exists pos_productos_codigo_key;
+alter table pos_proveedores drop constraint if exists pos_proveedores_codigo_key;
+alter table pos_productos   drop constraint if exists pos_productos_tienda_codigo_key;
+alter table pos_proveedores drop constraint if exists pos_proveedores_tienda_codigo_key;
+alter table pos_productos   add constraint pos_productos_tienda_codigo_key unique (tienda_id, codigo);
+alter table pos_proveedores add constraint pos_proveedores_tienda_codigo_key unique (tienda_id, codigo);
 
--- security definer evita recursión con las políticas de perfiles
-
--- Tienda del usuario autenticado (null si es superadmin)
+-- 7. Funciones nuevas
 create or replace function pos_mi_tienda()
 returns uuid
 language sql stable security definer
 set search_path = public
 as $$
     select tienda_id from pos_perfiles where id = auth.uid()
-$$;
-
-create or replace function pos_es_admin()
-returns boolean
-language sql stable security definer
-set search_path = public
-as $$
-    select exists (
-        select 1 from pos_perfiles
-        where id = auth.uid() and rol = 'admin'
-    );
 $$;
 
 create or replace function pos_es_superadmin()
@@ -124,21 +70,7 @@ as $$
     );
 $$;
 
--- ¿Es usuario del POS? En proyecto compartido, "authenticated"
--- no basta: también entrarían los usuarios de la app inv_*.
-create or replace function pos_tiene_perfil()
-returns boolean
-language sql stable security definer
-set search_path = public
-as $$
-    select exists (
-        select 1 from pos_perfiles
-        where id = auth.uid()
-    );
-$$;
-
--- Los inserts del cliente no mandan tienda_id: la columna la
--- llena sola con la tienda del usuario autenticado.
+-- 8. Defaults: los inserts del cliente heredan la tienda solos
 alter table pos_perfiles    alter column tienda_id set default pos_mi_tienda();
 alter table pos_productos   alter column tienda_id set default pos_mi_tienda();
 alter table pos_proveedores alter column tienda_id set default pos_mi_tienda();
@@ -149,12 +81,7 @@ create index if not exists idx_pos_proveedores_tienda on pos_proveedores(tienda_
 create index if not exists idx_pos_ventas_tienda_fecha on pos_ventas(tienda_id, fecha);
 create index if not exists idx_pos_perfiles_tienda on pos_perfiles(tienda_id);
 
--- ---------- VENTA ATÓMICA (RPC) ----------
-
--- Registra la venta + detalle + descuento de inventario en UNA
--- transacción, limitada a la tienda del cajero. El cajero no
--- tiene permiso directo de UPDATE en productos, así que esta
--- función corre como definer.
+-- 9. RPC actualizada: venta limitada a la tienda del cajero
 create or replace function pos_registrar_venta(p_items jsonb, p_pago numeric)
 returns bigint
 language plpgsql security definer
@@ -172,9 +99,6 @@ begin
         raise exception 'Usuario no autorizado en NeoVenta';
     end if;
 
-    -- Validar existencia y calcular total en el servidor,
-    -- solo contra productos de la propia tienda
-    -- (nunca confiar en el total que manda el cliente)
     for item in select * from jsonb_array_elements(p_items) loop
         select * into prod
         from pos_productos
@@ -217,19 +141,20 @@ begin
 end;
 $$;
 
-revoke all on function pos_registrar_venta(jsonb, numeric) from public;
-grant execute on function pos_registrar_venta(jsonb, numeric) to authenticated;
-
--- ---------- ROW LEVEL SECURITY ----------
-
+-- 10. RLS: políticas viejas fuera, nuevas con scope de tienda
 alter table pos_tiendas enable row level security;
-alter table pos_perfiles enable row level security;
-alter table pos_productos enable row level security;
-alter table pos_proveedores enable row level security;
-alter table pos_ventas enable row level security;
-alter table pos_detalle_venta enable row level security;
 
--- tiendas: cada usuario lee la suya; superadmin las gestiona todas
+drop policy if exists "perfiles_lectura_propia" on pos_perfiles;
+drop policy if exists "perfiles_admin" on pos_perfiles;
+drop policy if exists "productos_lectura" on pos_productos;
+drop policy if exists "productos_admin" on pos_productos;
+drop policy if exists "proveedores_lectura" on pos_proveedores;
+drop policy if exists "proveedores_admin" on pos_proveedores;
+drop policy if exists "ventas_insert" on pos_ventas;
+drop policy if exists "ventas_lectura" on pos_ventas;
+drop policy if exists "detalle_insert" on pos_detalle_venta;
+drop policy if exists "detalle_lectura" on pos_detalle_venta;
+
 create policy "tiendas_lectura" on pos_tiendas
     for select to authenticated
     using (id = pos_mi_tienda() or pos_es_superadmin());
@@ -238,8 +163,6 @@ create policy "tiendas_superadmin" on pos_tiendas
     using (pos_es_superadmin())
     with check (pos_es_superadmin());
 
--- perfiles: usuarios de la misma tienda se ven entre sí
--- (necesario para el listado de Control de Usuarios)
 create policy "perfiles_lectura" on pos_perfiles
     for select to authenticated
     using (id = auth.uid() or tienda_id = pos_mi_tienda() or pos_es_superadmin());
@@ -257,7 +180,6 @@ create policy "perfiles_admin_delete" on pos_perfiles
     for delete to authenticated
     using (pos_es_superadmin() or (pos_es_admin() and tienda_id = pos_mi_tienda()));
 
--- productos: la tienda los lee; solo su admin escribe
 create policy "productos_lectura" on pos_productos
     for select to authenticated
     using (tienda_id = pos_mi_tienda() or pos_es_superadmin());
@@ -272,7 +194,6 @@ create policy "productos_admin_delete" on pos_productos
     for delete to authenticated
     using (pos_es_superadmin() or (pos_es_admin() and tienda_id = pos_mi_tienda()));
 
--- proveedores: igual que productos
 create policy "proveedores_lectura" on pos_proveedores
     for select to authenticated
     using (tienda_id = pos_mi_tienda() or pos_es_superadmin());
@@ -287,8 +208,6 @@ create policy "proveedores_admin_delete" on pos_proveedores
     for delete to authenticated
     using (pos_es_superadmin() or (pos_es_admin() and tienda_id = pos_mi_tienda()));
 
--- ventas: cajero inserta en su tienda y ve las suyas;
--- admin ve todas las de su tienda; superadmin todo
 create policy "ventas_insert" on pos_ventas
     for insert to authenticated
     with check (
@@ -303,7 +222,6 @@ create policy "ventas_lectura" on pos_ventas
         or (tienda_id = pos_mi_tienda() and (cajero_id = auth.uid() or pos_es_admin()))
     );
 
--- detalle_venta: sigue el acceso de su venta padre
 create policy "detalle_insert" on pos_detalle_venta
     for insert to authenticated
     with check (
@@ -327,23 +245,3 @@ create policy "detalle_lectura" on pos_detalle_venta
                   )
         )
     );
-
--- ============================================================
--- SETUP INICIAL (después de correr este archivo):
---
--- 1. Crear la(s) tienda(s):
---      insert into pos_tiendas (nombre) values ('Mi Tienda');
---
--- 2. Crear el primer superadmin en Authentication → Users
---    (email: root@neoventa.local, Auto Confirm ON) y luego:
---      insert into pos_perfiles (id, cuenta, rol)
---      values ('UUID-DEL-USUARIO', 'root', 'superadmin');
---
---    O para un admin de tienda (flujo normal):
---      insert into pos_perfiles (id, tienda_id, cuenta, rol)
---      values ('UUID', (select id from pos_tiendas where nombre='Mi Tienda'), 'admin', 'admin');
---
--- 3. Para el demo público: correr seed.sql (crea 'Tienda Demo'
---    con productos) y registrar sus usuarios con tienda_id = la
---    tienda demo. Las credenciales demo van en el portafolio.
--- ============================================================

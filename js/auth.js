@@ -28,9 +28,10 @@ async function getPerfil() {
     const { data: { user } } = await _supabase.auth.getUser();
     if (!user) return null;
 
+    // Trae también el nombre de la tienda (embed por FK tienda_id)
     const { data: perfil } = await _supabase
         .from("pos_perfiles")
-        .select("*")
+        .select("*, pos_tiendas(nombre)")
         .eq("id", user.id)
         .single();
 

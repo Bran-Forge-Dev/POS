@@ -1,22 +1,20 @@
-document.addEventListener("DOMContentLoaded", function () {
-    requerirSesion();
+document.addEventListener("DOMContentLoaded", async function () {
+    await requerirSesion();
 
-    // Catálogo real desde localStorage (el mismo que alimenta AgregarProductos)
-    const PRODUCTOS_SEMILLA = [
-        { codigo: "1001", descripcion: "Coca-Cola 600ml", costo: 10.00, venta: 18.00, mayoreo: 16.00, cantidad: 25, minimo: 5 },
-        { codigo: "1002", descripcion: "Galletas Oreo", costo: 8.00, venta: 14.50, mayoreo: 13.00, cantidad: 10, minimo: 3 },
-        { codigo: "1003", descripcion: "Sabritas 45g", costo: 7.00, venta: 12.00, mayoreo: 10.50, cantidad: 15, minimo: 5 },
-        { codigo: "1004", descripcion: "Agua Bonafont 1L", costo: 8.00, venta: 13.00, mayoreo: 11.50, cantidad: 20, minimo: 6 },
-        { codigo: "1005", descripcion: "Pan Bimbo Grande", costo: 30.00, venta: 42.00, mayoreo: 38.00, cantidad: 8, minimo: 2 }
-    ];
-
-    let productos = JSON.parse(localStorage.getItem("productos")) || [];
-    if (productos.length === 0) {
-        productos = PRODUCTOS_SEMILLA;
-        localStorage.setItem("productos", JSON.stringify(productos));
+    // Catálogo real desde Supabase (tabla pos_productos)
+    let productos = [];
+    async function cargarCatalogo() {
+        const { data, error } = await _supabase
+            .from("pos_productos")
+            .select("*")
+            .order("codigo");
+        if (error) {
+            alert("No se pudo cargar el catálogo de productos.");
+            return;
+        }
+        productos = data;
     }
-
-    const guardarCatalogo = () => localStorage.setItem("productos", JSON.stringify(productos));
+    await cargarCatalogo();
 
     // Elementos del DOM
     const btnAgregar = document.querySelector(".btn-agregar");
@@ -211,7 +209,7 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
     // Cobrar: valida pago, descuenta inventario y registra la venta
-    botonCobrar.addEventListener("click", function (e) {
+    botonCobrar.addEventListener("click", async function (e) {
         e.preventDefault();
         recalcularTotalesYUI();
 
@@ -234,37 +232,36 @@ document.addEventListener("DOMContentLoaded", function () {
         const cambioTotal = pagoVal - totalActual;
         cambioMonto.textContent = `$${cambioTotal.toFixed(2)}`;
 
-        // Descontar existencias y armar detalle de la venta
+        // Registrar la venta en el servidor: valida stock, calcula
+        // el total y descuenta inventario en UNA transacción
         const items = [...tbody.rows].map(row => {
             const codigo = row.cells[0].textContent;
-            const cantidad = parseInt(row.cells[3].textContent, 10);
             const producto = productos.find(p => p.codigo === codigo);
-            if (producto) producto.cantidad -= cantidad;
             return {
-                codigo,
-                descripcion: row.cells[1].textContent,
-                precio: producto ? producto.venta : 0,
-                cantidad
+                producto_id: producto.id,
+                cantidad: parseInt(row.cells[3].textContent, 10)
             };
         });
-        guardarCatalogo();
 
-        // Registrar la venta (folio, cajero, detalle, totales)
-        const ventas = JSON.parse(localStorage.getItem("ventas")) || [];
-        const sesion = getSesion();
-        ventas.push({
-            folio: ventas.length + 1,
-            fecha: new Date().toISOString(),
-            cajero: sesion ? sesion.cuenta : "desconocido",
-            items,
-            total: totalActual,
-            pago: pagoVal,
-            cambio: cambioTotal
+        const { data: folio, error } = await _supabase.rpc("pos_registrar_venta", {
+            p_items: items,
+            p_pago: pagoVal
         });
-        localStorage.setItem("ventas", JSON.stringify(ventas));
+
+        if (error) {
+            alert("No se pudo registrar la venta: " + error.message);
+            cambioMonto.textContent = "$0.00";
+            return;
+        }
+
+        // Reflejar el nuevo stock en el catálogo local
+        items.forEach(it => {
+            const p = productos.find(x => x.id === it.producto_id);
+            if (p) p.cantidad -= it.cantidad;
+        });
 
         setTimeout(() => {
-            alert("Compra realizada");
+            alert(`Compra realizada · Folio ${folio}`);
             limpiarTicket();
         }, 100);
     });

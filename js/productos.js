@@ -1,7 +1,6 @@
-// 1. Obtener productos desde localStorage
-let productos = JSON.parse(localStorage.getItem("productos")) || [];
+// Productos desde Supabase (tabla pos_productos)
+let productos = [];
 
-// 2. Referencia al cuerpo de la tabla
 const tablaBody = document.getElementById("tablaProductosBody");
 
 function celda(texto) {
@@ -44,23 +43,46 @@ function renderizarProductos() {
     });
 }
 
+async function cargarProductos() {
+    const { data, error } = await _supabase
+        .from("pos_productos")
+        .select("*")
+        .order("codigo");
+
+    if (error) {
+        console.error("Error cargando productos:", error.message);
+        alert("No se pudieron cargar los productos.");
+        return;
+    }
+    productos = data;
+    renderizarProductos();
+}
+
 /**
  * Elimina un producto por su índice
  * @param {number} index - Posición del producto en el array
  */
-function eliminarProducto(index) {
-    if (confirm("¿Estás seguro de que deseas eliminar este producto?")) {
-        productos.splice(index, 1);
-        localStorage.setItem("productos", JSON.stringify(productos));
-        renderizarProductos();
+async function eliminarProducto(index) {
+    if (!confirm("¿Estás seguro de que deseas eliminar este producto?")) return;
+
+    const { error } = await _supabase
+        .from("pos_productos")
+        .delete()
+        .eq("id", productos[index].id);
+
+    if (error) {
+        alert("No se pudo eliminar: " + error.message);
+        return;
     }
+    productos.splice(index, 1);
+    renderizarProductos();
 }
 
 /**
  * Edita un producto por su índice
  * @param {number} index - Posición del producto en el array
  */
-function editarProducto(index) {
+async function editarProducto(index) {
     const p = productos[index];
     const descripcion = prompt("Descripción:", p.descripcion);
     const costo = prompt("Precio costo:", p.costo);
@@ -76,19 +98,26 @@ function editarProducto(index) {
         return;
     }
 
-    productos[index] = {
-        ...p,
+    const cambios = {
         descripcion: descripcion.trim(),
         costo: nums[0],
         venta: nums[1],
         mayoreo: nums[2],
         cantidad: nums[3]
     };
-    localStorage.setItem("productos", JSON.stringify(productos));
+
+    const { error } = await _supabase
+        .from("pos_productos")
+        .update(cambios)
+        .eq("id", p.id);
+
+    if (error) {
+        alert("No se pudo actualizar: " + error.message);
+        return;
+    }
+    productos[index] = { ...p, ...cambios };
     renderizarProductos();
 }
 
 // Inicializar al cargar la página
-document.addEventListener("DOMContentLoaded", () => {
-    renderizarProductos();
-});
+document.addEventListener("DOMContentLoaded", cargarProductos);

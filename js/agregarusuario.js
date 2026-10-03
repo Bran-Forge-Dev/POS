@@ -1,16 +1,14 @@
 // ===============================
-// Array en memoria y persistencia
-// ===============================
-let listaUsuarios = getUsuarios();
-
-// ===============================
-// Función para guardar usuario
+// Registro de usuario: crea la cuenta en Supabase Auth
+// y su perfil con rol en pos_perfiles.
+// Se usa _supabaseAdmin (persistSession: false) para que el
+// signUp del nuevo usuario no cierre la sesión del admin.
 // ===============================
 async function guardarUsuario(event) {
     event.preventDefault();
 
-    const cuenta = document.getElementById("cuenta").value.trim();
-    const clave = document.getElementById("clave").value.trim();
+    const cuenta = document.getElementById("cuenta").value.trim().toLowerCase();
+    const clave = document.getElementById("clave").value;
     const rol = document.getElementById("rol").value.trim().toLowerCase();
     const telefono = document.getElementById("telefono").value.trim();
     const fecha = document.getElementById("fecha").value.trim();
@@ -22,32 +20,36 @@ async function guardarUsuario(event) {
         return;
     }
 
-    if (listaUsuarios.some(u => u.cuenta === cuenta)) {
-        alert("Ya existe un usuario con esa cuenta.");
+    // 1. Crear la cuenta de autenticación (email sintético)
+    const { data, error } = await _supabaseAdmin.auth.signUp({
+        email: `${cuenta}@${DOMINIO_USUARIOS}`,
+        password: clave
+    });
+
+    if (error) {
+        alert("No se pudo crear la cuenta: " + error.message);
         return;
     }
 
-    const nuevoUsuario = {
-        cuenta,
-        claveHash: await hashClave(clave),
-        rol,
-        telefono,
-        fecha,
-        correo
-    };
+    // 2. Crear el perfil con rol (lo hace el cliente del admin,
+    //    que sí tiene permiso por RLS)
+    const { error: errorPerfil } = await _supabase
+        .from("pos_perfiles")
+        .insert({
+            id: data.user.id,
+            cuenta,
+            rol,
+            telefono,
+            correo,
+            fecha_nacimiento: fecha
+        });
 
-    // Guardar en array en memoria y en localStorage
-    listaUsuarios.push(nuevoUsuario);
-    guardarUsuarios(listaUsuarios);
+    if (errorPerfil) {
+        alert("Cuenta creada pero falló el perfil: " + errorPerfil.message);
+        return;
+    }
 
     // Limpiar formulario
     document.getElementById("formUsuario").reset();
-
-    // Actualizar tabla en Control de Usuarios si está abierta
-    if (window.opener && typeof window.opener.actualizarTablaUsuarios === "function") {
-        window.opener.listaUsuarios = listaUsuarios;
-        window.opener.actualizarTablaUsuarios();
-    }
-
     alert("Usuario guardado correctamente.");
 }

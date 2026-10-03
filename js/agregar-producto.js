@@ -1,6 +1,6 @@
 const form = document.getElementById("formProducto");
 
-form.addEventListener("submit", function (e) {
+form.addEventListener("submit", async function (e) {
     e.preventDefault();
 
     const producto = {
@@ -18,17 +18,19 @@ form.addEventListener("submit", function (e) {
         return;
     }
 
-    let productos = JSON.parse(localStorage.getItem("productos")) || [];
+    const { error } = await _supabase
+        .from("pos_productos")
+        .insert(producto);
 
-    // validar código duplicado
-    const existe = productos.some(p => p.codigo === producto.codigo);
-    if (existe) {
-        alert("El código del producto ya existe");
+    if (error) {
+        // 23505 = violación de llave única (código duplicado)
+        if (error.code === "23505") {
+            alert("El código del producto ya existe");
+        } else {
+            alert("No se pudo guardar: " + error.message);
+        }
         return;
     }
-
-    productos.push(producto);
-    localStorage.setItem("productos", JSON.stringify(productos));
 
     window.location.href = "productos.html";
 });

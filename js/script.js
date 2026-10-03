@@ -1,34 +1,32 @@
 document.addEventListener("DOMContentLoaded", async function () {
     // Si ya hay sesión activa, ir directo al menú
-    if (getSesion()) {
+    const sesion = await getSesion();
+    if (sesion) {
         window.location.replace("html/menu.html");
         return;
     }
-
-    await asegurarUsuariosIniciales();
 
     const mensajeError = document.getElementById("mensajeError");
     const usuarioInput = document.getElementById("usuario");
     const passwordInput = document.getElementById("password");
     const form = document.getElementById("formLogin");
 
-    async function intentarLogin() {
-        const cuenta = usuarioInput.value.trim();
-        const clave = passwordInput.value.trim();
+    form.addEventListener("submit", async function (e) {
+        e.preventDefault();
+
+        const cuenta = usuarioInput.value.trim().toLowerCase();
+        const clave = passwordInput.value;
 
         // Oculta mensaje previo
         mensajeError.style.display = "none";
         mensajeError.textContent = "";
 
-        const hash = await hashClave(clave);
-        const usuario = getUsuarios().find(u => u.cuenta === cuenta && u.claveHash === hash);
+        const { error } = await _supabase.auth.signInWithPassword({
+            email: `${cuenta}@${DOMINIO_USUARIOS}`,
+            password: clave
+        });
 
-        if (usuario) {
-            sessionStorage.setItem(NEOV_SESION_KEY, JSON.stringify({
-                cuenta: usuario.cuenta,
-                rol: usuario.rol,
-                loginAt: Date.now()
-            }));
+        if (!error) {
             window.location.href = "html/menu.html";
         } else {
             mensajeError.textContent = "Usuario o contraseña incorrectos.";
@@ -39,10 +37,5 @@ document.addEventListener("DOMContentLoaded", async function () {
             passwordInput.value = "";
             usuarioInput.focus();
         }
-    }
-
-    form.addEventListener("submit", function (e) {
-        e.preventDefault();
-        intentarLogin();
     });
 });

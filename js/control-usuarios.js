@@ -1,7 +1,7 @@
 // ===============================
-// Array de usuarios en memoria
+// Usuarios desde Supabase (pos_perfiles)
 // ===============================
-let listaUsuarios = getUsuarios();
+let listaUsuarios = [];
 
 // ===============================
 // Helpers de tabla
@@ -41,50 +41,81 @@ function actualizarTablaUsuarios() {
     });
 }
 
+async function cargarUsuarios() {
+    const { data, error } = await _supabase
+        .from("pos_perfiles")
+        .select("*")
+        .order("cuenta");
+
+    if (error) {
+        console.error("Error cargando usuarios:", error.message);
+        alert("No se pudieron cargar los usuarios.");
+        return;
+    }
+    listaUsuarios = data;
+    actualizarTablaUsuarios();
+}
+
 // ===============================
 // Función para eliminar usuario
+// Nota: elimina el perfil (acceso al POS). La cuenta de auth
+// queda registrada en el panel de Supabase sin acceso a datos.
 // ===============================
-function eliminarUsuario(index) {
+async function eliminarUsuario(index) {
     const usuario = listaUsuarios[index];
-    const sesion = getSesion();
-    if (sesion && usuario.cuenta === sesion.cuenta) {
+    const perfil = await getPerfil();
+    if (perfil && usuario.id === perfil.id) {
         alert("No puedes eliminar tu propia cuenta en sesión.");
         return;
     }
-    if (confirm("¿Deseas eliminar este usuario?")) {
-        listaUsuarios.splice(index, 1);
-        guardarUsuarios(listaUsuarios);
-        actualizarTablaUsuarios();
+    if (!confirm("¿Deseas eliminar este usuario?")) return;
+
+    const { error } = await _supabase
+        .from("pos_perfiles")
+        .delete()
+        .eq("id", usuario.id);
+
+    if (error) {
+        alert("No se pudo eliminar: " + error.message);
+        return;
     }
+    listaUsuarios.splice(index, 1);
+    actualizarTablaUsuarios();
 }
 
 // ===============================
 // Función para editar usuario
 // ===============================
-function editarUsuario(index) {
+async function editarUsuario(index) {
     const usuario = listaUsuarios[index];
     const nuevaCuenta = prompt("Editar cuenta:", usuario.cuenta);
     const nuevoRol = prompt("Editar rol (admin/cajero):", usuario.rol);
     const nuevoTelefono = prompt("Editar teléfono:", usuario.telefono);
     const nuevoCorreo = prompt("Editar correo:", usuario.correo);
 
-    if (nuevaCuenta && nuevoRol && nuevoTelefono && nuevoCorreo) {
-        listaUsuarios[index] = {
-            ...usuario,
-            cuenta: nuevaCuenta.trim(),
-            rol: nuevoRol.trim().toLowerCase(),
-            telefono: nuevoTelefono.trim(),
-            correo: nuevoCorreo.trim()
-        };
+    if (!nuevaCuenta || !nuevoRol || !nuevoTelefono || !nuevoCorreo) return;
 
-        guardarUsuarios(listaUsuarios);
-        actualizarTablaUsuarios();
+    const cambios = {
+        cuenta: nuevaCuenta.trim().toLowerCase(),
+        rol: nuevoRol.trim().toLowerCase(),
+        telefono: nuevoTelefono.trim(),
+        correo: nuevoCorreo.trim()
+    };
+
+    const { error } = await _supabase
+        .from("pos_perfiles")
+        .update(cambios)
+        .eq("id", usuario.id);
+
+    if (error) {
+        alert("No se pudo actualizar: " + error.message);
+        return;
     }
+    listaUsuarios[index] = { ...usuario, ...cambios };
+    actualizarTablaUsuarios();
 }
 
 // ===============================
 // Ejecutar al cargar la página
 // ===============================
-window.addEventListener("DOMContentLoaded", () => {
-    actualizarTablaUsuarios();
-});
+window.addEventListener("DOMContentLoaded", cargarUsuarios);

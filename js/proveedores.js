@@ -1,7 +1,7 @@
-// Cambiamos "tablaProveedoresBody" por "tablaProveedores" para que coincida con tu HTML
+// Proveedores desde Supabase (tabla pos_proveedores)
 const tablaBody = document.getElementById("tablaProveedores");
 
-let proveedores = JSON.parse(localStorage.getItem("proveedores")) || [];
+let proveedores = [];
 
 function celda(texto) {
     const td = document.createElement("td");
@@ -21,12 +21,7 @@ function celdaIcono(clase, onClick) {
 function renderTabla() {
     const mensajeVacio = document.getElementById("sinProveedores");
 
-    if (proveedores.length === 0) {
-        mensajeVacio.style.display = "block";
-    } else {
-        mensajeVacio.style.display = "none";
-    }
-
+    mensajeVacio.style.display = proveedores.length === 0 ? "block" : "none";
     tablaBody.innerHTML = "";
 
     proveedores.forEach((prov, index) => {
@@ -43,15 +38,38 @@ function renderTabla() {
     });
 }
 
-function eliminarProveedor(index) {
-    if (confirm("¿Eliminar proveedor?")) {
-        proveedores.splice(index, 1);
-        localStorage.setItem("proveedores", JSON.stringify(proveedores));
-        renderTabla();
+async function cargarProveedores() {
+    const { data, error } = await _supabase
+        .from("pos_proveedores")
+        .select("*")
+        .order("codigo");
+
+    if (error) {
+        console.error("Error cargando proveedores:", error.message);
+        alert("No se pudieron cargar los proveedores.");
+        return;
     }
+    proveedores = data;
+    renderTabla();
 }
 
-function editarProveedor(index) {
+async function eliminarProveedor(index) {
+    if (!confirm("¿Eliminar proveedor?")) return;
+
+    const { error } = await _supabase
+        .from("pos_proveedores")
+        .delete()
+        .eq("id", proveedores[index].id);
+
+    if (error) {
+        alert("No se pudo eliminar: " + error.message);
+        return;
+    }
+    proveedores.splice(index, 1);
+    renderTabla();
+}
+
+async function editarProveedor(index) {
     const prov = proveedores[index];
     const nombre = prompt("Nombre:", prov.nombre);
     const razon = prompt("Razón social:", prov.razon);
@@ -61,16 +79,25 @@ function editarProveedor(index) {
 
     if (!nombre || !razon || !telefono || !direccion || !correo) return;
 
-    proveedores[index] = {
-        ...prov,
+    const cambios = {
         nombre: nombre.trim(),
         razon: razon.trim(),
         telefono: telefono.trim(),
         direccion: direccion.trim(),
         correo: correo.trim()
     };
-    localStorage.setItem("proveedores", JSON.stringify(proveedores));
+
+    const { error } = await _supabase
+        .from("pos_proveedores")
+        .update(cambios)
+        .eq("id", prov.id);
+
+    if (error) {
+        alert("No se pudo actualizar: " + error.message);
+        return;
+    }
+    proveedores[index] = { ...prov, ...cambios };
     renderTabla();
 }
 
-renderTabla();
+document.addEventListener("DOMContentLoaded", cargarProveedores);

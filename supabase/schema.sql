@@ -63,6 +63,27 @@ create table if not exists pos_proveedores (
     unique (tienda_id, codigo)
 );
 
+-- Corte de caja: apertura con fondo, cierre con arqueo
+-- (esperado vs contado -> faltante/sobrante)
+create table if not exists pos_cortes (
+    id bigint generated always as identity primary key,
+    tienda_id uuid not null references pos_tiendas(id),
+    cajero_id uuid not null references auth.users(id),  -- quien abrió
+    abierto_en timestamptz not null default now(),
+    cerrado_en timestamptz,
+    fondo_inicial numeric(10,2) not null default 0 check (fondo_inicial >= 0),
+    total_ventas numeric(12,2),
+    num_ventas integer,
+    efectivo_esperado numeric(12,2),   -- fondo + ventas
+    efectivo_contado numeric(12,2),    -- lo contado físicamente
+    diferencia numeric(12,2),          -- contado - esperado (- faltante / + sobrante)
+    estado text not null default 'abierto' check (estado in ('abierto', 'cerrado'))
+);
+
+-- Una sola caja abierta por tienda a la vez
+create unique index if not exists pos_cortes_una_abierta
+    on pos_cortes (tienda_id) where estado = 'abierto';
+
 -- Encabezado de venta; el folio ES la llave primaria (global,
 -- no reinicia por tienda — para folios por tienda haría falta
 -- una secuencia por tenant, overkill por ahora)
@@ -70,6 +91,7 @@ create table if not exists pos_ventas (
     folio bigint generated always as identity primary key,
     tienda_id uuid not null references pos_tiendas(id),
     cajero_id uuid not null references auth.users(id),
+    corte_id bigint references pos_cortes(id),  -- corte vigente al vender
     fecha timestamptz not null default now(),
     total numeric(12,2) not null check (total >= 0),
     pago numeric(12,2) not null check (pago >= 0),
@@ -147,7 +169,83 @@ alter table pos_ventas      alter column tienda_id set default pos_mi_tienda();
 create index if not exists idx_pos_productos_tienda on pos_productos(tienda_id);
 create index if not exists idx_pos_proveedores_tienda on pos_proveedores(tienda_id);
 create index if not exists idx_pos_ventas_tienda_fecha on pos_ventas(tienda_id, fecha);
+create index if not exists idx_pos_ventas_corte on pos_ventas(corte_id);
+create index if not exists idx_pos_cortes_tienda on pos_cortes(tienda_id);
 create index if not exists idx_pos_perfiles_tienda on pos_perfiles(tienda_id);
+
+-- ---------- CORTE DE CAJA (RPC) ----------
+
+-- Abrir caja: una sola abierta por tienda (índice lo garantiza)
+create or replace function pos_abrir_corte(p_fondo numeric)
+returns bigint
+language plpgsql security definer
+set search_path = public
+as $$
+declare
+    v_tienda uuid;
+    v_id bigint;
+begin
+    select tienda_id into v_tienda from pos_perfiles where id = auth.uid();
+    if v_tienda is null then
+        raise exception 'Usuario no autorizado en NeoVenta';
+    end if;
+    if exists (select 1 from pos_cortes where tienda_id = v_tienda and estado = 'abierto') then
+        raise exception 'Ya hay un corte abierto en esta tienda';
+    end if;
+
+    insert into pos_cortes (tienda_id, cajero_id, fondo_inicial)
+    values (v_tienda, auth.uid(), p_fondo)
+    returning id into v_id;
+
+    return v_id;
+end;
+$$;
+
+-- Cerrar caja: arqueo en una transacción, devuelve el corte como json
+create or replace function pos_cerrar_corte(p_contado numeric)
+returns json
+language plpgsql security definer
+set search_path = public
+as $$
+declare
+    v_tienda uuid;
+    v_corte pos_cortes;
+    v_total numeric;
+    v_num int;
+begin
+    select tienda_id into v_tienda from pos_perfiles where id = auth.uid();
+    if v_tienda is null then
+        raise exception 'Usuario no autorizado en NeoVenta';
+    end if;
+
+    select * into v_corte
+    from pos_cortes
+    where tienda_id = v_tienda and estado = 'abierto'
+    for update;
+
+    if not found then
+        raise exception 'No hay corte abierto en esta tienda';
+    end if;
+
+    select coalesce(sum(total), 0), count(*)
+    into v_total, v_num
+    from pos_ventas
+    where corte_id = v_corte.id;
+
+    update pos_cortes set
+        estado            = 'cerrado',
+        cerrado_en        = now(),
+        total_ventas      = v_total,
+        num_ventas        = v_num,
+        efectivo_esperado = fondo_inicial + v_total,
+        efectivo_contado  = p_contado,
+        diferencia        = p_contado - (fondo_inicial + v_total)
+    where id = v_corte.id
+    returning * into v_corte;
+
+    return row_to_json(v_corte);
+end;
+$$;
 
 -- ---------- VENTA ATÓMICA (RPC) ----------
 
@@ -163,6 +261,7 @@ as $$
 declare
     v_folio bigint;
     v_tienda uuid;
+    v_corte bigint;
     v_total numeric := 0;
     item jsonb;
     prod record;
@@ -171,6 +270,11 @@ begin
     if v_tienda is null then
         raise exception 'Usuario no autorizado en NeoVenta';
     end if;
+
+    -- Corte abierto de la tienda (puede no haber: venta sin etiquetar)
+    select id into v_corte
+    from pos_cortes
+    where tienda_id = v_tienda and estado = 'abierto';
 
     -- Validar existencia y calcular total en el servidor,
     -- solo contra productos de la propia tienda
@@ -197,8 +301,8 @@ begin
         raise exception 'Pago insuficiente: faltan %', (v_total - p_pago);
     end if;
 
-    insert into pos_ventas (cajero_id, tienda_id, total, pago, cambio)
-    values (auth.uid(), v_tienda, v_total, p_pago, p_pago - v_total)
+    insert into pos_ventas (cajero_id, tienda_id, corte_id, total, pago, cambio)
+    values (auth.uid(), v_tienda, v_corte, v_total, p_pago, p_pago - v_total)
     returning folio into v_folio;
 
     for item in select * from jsonb_array_elements(p_items) loop
@@ -219,10 +323,15 @@ $$;
 
 revoke all on function pos_registrar_venta(jsonb, numeric) from public;
 grant execute on function pos_registrar_venta(jsonb, numeric) to authenticated;
+revoke all on function pos_abrir_corte(numeric) from public;
+revoke all on function pos_cerrar_corte(numeric) from public;
+grant execute on function pos_abrir_corte(numeric) to authenticated;
+grant execute on function pos_cerrar_corte(numeric) to authenticated;
 
 -- ---------- ROW LEVEL SECURITY ----------
 
 alter table pos_tiendas enable row level security;
+alter table pos_cortes enable row level security;
 alter table pos_perfiles enable row level security;
 alter table pos_productos enable row level security;
 alter table pos_proveedores enable row level security;
@@ -237,6 +346,19 @@ create policy "tiendas_superadmin" on pos_tiendas
     for all to authenticated
     using (pos_es_superadmin())
     with check (pos_es_superadmin());
+
+-- cortes: visibles para toda la tienda (la caja se comparte);
+-- escritura solo dentro de la propia tienda
+create policy "cortes_lectura" on pos_cortes
+    for select to authenticated
+    using (tienda_id = pos_mi_tienda() or pos_es_superadmin());
+create policy "cortes_insert" on pos_cortes
+    for insert to authenticated
+    with check (tienda_id = pos_mi_tienda() or pos_es_superadmin());
+create policy "cortes_update" on pos_cortes
+    for update to authenticated
+    using (tienda_id = pos_mi_tienda() or pos_es_superadmin())
+    with check (tienda_id = pos_mi_tienda() or pos_es_superadmin());
 
 -- perfiles: usuarios de la misma tienda se ven entre sí
 -- (necesario para el listado de Control de Usuarios)

@@ -143,6 +143,137 @@ body {
     }
 }
 
+/* ---------- Panel de caja ---------- */
+
+.panel {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 0 20px 50px;
+    text-align: left;
+}
+
+.bloque {
+    margin-top: 36px;
+}
+
+.bloque .subtitulo {
+    margin-top: 0;
+    text-align: center;
+}
+
+.corte-card {
+    border: 1px solid #000;
+    border-radius: 10px;
+    padding: 20px 25px;
+    max-width: 480px;
+    margin: 20px auto 0;
+    text-align: left;
+}
+
+.badge {
+    display: inline-block;
+    font-weight: 700;
+    font-size: 0.85rem;
+    padding: 5px 14px;
+    border-radius: 20px;
+    margin-bottom: 14px;
+}
+
+.badge-abierto {
+    background-color: #e8f5e9;
+    color: #2e7d32;
+    border: 1px solid #2e7d32;
+}
+
+.badge-cerrado {
+    background-color: #f5f5f5;
+    color: #555;
+    border: 1px solid #999;
+}
+
+.corte-linea {
+    display: flex;
+    justify-content: space-between;
+    padding: 6px 0;
+    border-bottom: 1px solid #eee;
+    font-size: 0.95rem;
+}
+
+.corte-linea.fuerte {
+    font-weight: 700;
+    color: #c67f00;
+}
+
+.corte-nota {
+    color: #777;
+    font-size: 0.9rem;
+    margin: 0;
+}
+
+.corte-acciones {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    flex-wrap: wrap;
+    margin-top: 22px;
+}
+
+.corte-acciones .btn-card {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    width: auto;
+    font-family: 'Inter', sans-serif;
+}
+
+/* ---------- Tablas ---------- */
+
+.tabla-contenedor {
+    overflow-x: auto;
+    margin-top: 18px;
+}
+
+.tabla {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+}
+
+.tabla th {
+    background-color: #c67f00;
+    color: #fff;
+    padding: 10px 12px;
+    text-align: left;
+    white-space: nowrap;
+}
+
+.tabla td {
+    padding: 9px 12px;
+    border-bottom: 1px solid #eee;
+    white-space: nowrap;
+}
+
+.tabla tbody tr:hover {
+    background-color: #fdf6e3;
+}
+
+.dif-neg {
+    color: #c62828;
+    font-weight: 700;
+}
+
+.dif-pos {
+    color: #2e7d32;
+    font-weight: 700;
+}
+
+@media (max-width: 600px) {
+    .corte-acciones {
+        flex-direction: column;
+        align-items: center;
+    }
+}
+
 /* Responsivo*/
 @media (max-width: 900px) {
     .contenedor-botones {

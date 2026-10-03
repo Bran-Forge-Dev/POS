@@ -1,12 +1,14 @@
 -- ============================================================
 -- NeoVenta POS — Esquema inicial (Supabase)
 -- Ejecutar completo en: SQL Editor del proyecto en supabase.com
+-- Tablas y funciones con prefijo pos_ para coexistir con otras
+-- apps en el mismo proyecto (p. ej. inv_* de inventario).
 -- ============================================================
 
 -- ---------- TABLAS ----------
 
 -- Perfil de usuario ligado a auth.users (cuenta + rol)
-create table if not exists perfiles (
+create table if not exists pos_perfiles (
     id uuid primary key references auth.users(id) on delete cascade,
     cuenta text not null unique,
     rol text not null default 'cajero' check (rol in ('admin', 'cajero')),
@@ -16,7 +18,7 @@ create table if not exists perfiles (
     created_at timestamptz not null default now()
 );
 
-create table if not exists productos (
+create table if not exists pos_productos (
     id bigint generated always as identity primary key,
     codigo text not null unique,
     descripcion text not null,
@@ -28,7 +30,7 @@ create table if not exists productos (
     created_at timestamptz not null default now()
 );
 
-create table if not exists proveedores (
+create table if not exists pos_proveedores (
     id bigint generated always as identity primary key,
     codigo text not null unique,
     nombre text not null,
@@ -40,7 +42,7 @@ create table if not exists proveedores (
 );
 
 -- Encabezado de venta; el folio ES la llave primaria
-create table if not exists ventas (
+create table if not exists pos_ventas (
     folio bigint generated always as identity primary key,
     cajero_id uuid not null references auth.users(id),
     fecha timestamptz not null default now(),
@@ -51,10 +53,10 @@ create table if not exists ventas (
 
 -- Detalle: copia codigo/descripcion/precio para conservar
 -- el histórico aunque el producto cambie o se borre después
-create table if not exists detalle_venta (
+create table if not exists pos_detalle_venta (
     id bigint generated always as identity primary key,
-    venta_id bigint not null references ventas(folio) on delete cascade,
-    producto_id bigint references productos(id) on delete set null,
+    venta_id bigint not null references pos_ventas(folio) on delete cascade,
+    producto_id bigint references pos_productos(id) on delete set null,
     codigo text not null,
     descripcion text not null,
     precio numeric(10,2) not null,
@@ -64,14 +66,27 @@ create table if not exists detalle_venta (
 -- ---------- FUNCIÓN DE ROL ----------
 
 -- security definer evita recursión con las políticas de perfiles
-create or replace function es_admin()
+create or replace function pos_es_admin()
 returns boolean
 language sql stable security definer
 set search_path = public
 as $$
     select exists (
-        select 1 from perfiles
+        select 1 from pos_perfiles
         where id = auth.uid() and rol = 'admin'
+    );
+$$;
+
+-- ¿Es usuario del POS? En proyecto compartido, "authenticated"
+-- no basta: también entrarían los usuarios de la app inv_*.
+create or replace function pos_tiene_perfil()
+returns boolean
+language sql stable security definer
+set search_path = public
+as $$
+    select exists (
+        select 1 from pos_perfiles
+        where id = auth.uid()
     );
 $$;
 
@@ -80,7 +95,7 @@ $$;
 -- Registra la venta + detalle + descuento de inventario en UNA
 -- transacción. El cajero no tiene permiso directo de UPDATE en
 -- productos, así que esta función corre como definer.
-create or replace function registrar_venta(p_items jsonb, p_pago numeric)
+create or replace function pos_registrar_venta(p_items jsonb, p_pago numeric)
 returns bigint
 language plpgsql security definer
 set search_path = public
@@ -91,15 +106,15 @@ declare
     item jsonb;
     prod record;
 begin
-    if auth.uid() is null then
-        raise exception 'Sesión requerida';
+    if not pos_tiene_perfil() then
+        raise exception 'Usuario no autorizado en NeoVenta';
     end if;
 
     -- Validar existencia y calcular total en el servidor
     -- (nunca confiar en el total que manda el cliente)
     for item in select * from jsonb_array_elements(p_items) loop
         select * into prod
-        from productos
+        from pos_productos
         where id = (item->>'producto_id')::bigint
         for update;
 
@@ -118,18 +133,18 @@ begin
         raise exception 'Pago insuficiente: faltan %', (v_total - p_pago);
     end if;
 
-    insert into ventas (cajero_id, total, pago, cambio)
+    insert into pos_ventas (cajero_id, total, pago, cambio)
     values (auth.uid(), v_total, p_pago, p_pago - v_total)
     returning folio into v_folio;
 
     for item in select * from jsonb_array_elements(p_items) loop
-        update productos
+        update pos_productos
         set cantidad = cantidad - (item->>'cantidad')::int
         where id = (item->>'producto_id')::bigint;
 
-        insert into detalle_venta (venta_id, producto_id, codigo, descripcion, precio, cantidad)
+        insert into pos_detalle_venta (venta_id, producto_id, codigo, descripcion, precio, cantidad)
         select v_folio, p.id, p.codigo, p.descripcion, p.venta, (item->>'cantidad')::int
-        from productos p
+        from pos_productos p
         where p.id = (item->>'producto_id')::bigint;
     end loop;
 
@@ -137,65 +152,65 @@ begin
 end;
 $$;
 
-revoke all on function registrar_venta(jsonb, numeric) from public;
-grant execute on function registrar_venta(jsonb, numeric) to authenticated;
+revoke all on function pos_registrar_venta(jsonb, numeric) from public;
+grant execute on function pos_registrar_venta(jsonb, numeric) to authenticated;
 
 -- ---------- ROW LEVEL SECURITY ----------
 
-alter table perfiles enable row level security;
-alter table productos enable row level security;
-alter table proveedores enable row level security;
-alter table ventas enable row level security;
-alter table detalle_venta enable row level security;
+alter table pos_perfiles enable row level security;
+alter table pos_productos enable row level security;
+alter table pos_proveedores enable row level security;
+alter table pos_ventas enable row level security;
+alter table pos_detalle_venta enable row level security;
 
 -- perfiles: cada usuario lee el suyo; admin gestiona todos
-create policy "perfiles_lectura_propia" on perfiles
+create policy "perfiles_lectura_propia" on pos_perfiles
     for select to authenticated
-    using (id = auth.uid() or es_admin());
-create policy "perfiles_admin" on perfiles
+    using (id = auth.uid() or pos_es_admin());
+create policy "perfiles_admin" on pos_perfiles
     for all to authenticated
-    using (es_admin());
+    using (pos_es_admin());
 
--- productos: todos los autenticados leen; solo admin escribe
-create policy "productos_lectura" on productos
+-- productos: usuarios del POS leen; solo admin escribe
+create policy "productos_lectura" on pos_productos
     for select to authenticated
-    using (true);
-create policy "productos_admin" on productos
+    using (pos_tiene_perfil());
+create policy "productos_admin" on pos_productos
     for all to authenticated
-    using (es_admin());
+    using (pos_es_admin());
 
 -- proveedores: igual que productos
-create policy "proveedores_lectura" on proveedores
+create policy "proveedores_lectura" on pos_proveedores
     for select to authenticated
-    using (true);
-create policy "proveedores_admin" on proveedores
+    using (pos_tiene_perfil());
+create policy "proveedores_admin" on pos_proveedores
     for all to authenticated
-    using (es_admin());
+    using (pos_es_admin());
 
 -- ventas: cajero inserta y ve las suyas; admin ve todo
-create policy "ventas_insert" on ventas
+create policy "ventas_insert" on pos_ventas
     for insert to authenticated
-    with check (cajero_id = auth.uid());
-create policy "ventas_lectura" on ventas
+    with check (cajero_id = auth.uid() and pos_tiene_perfil());
+create policy "ventas_lectura" on pos_ventas
     for select to authenticated
-    using (cajero_id = auth.uid() or es_admin());
+    using (cajero_id = auth.uid() or pos_es_admin());
 
 -- detalle_venta: sigue el acceso de su venta padre
-create policy "detalle_insert" on detalle_venta
+create policy "detalle_insert" on pos_detalle_venta
     for insert to authenticated
     with check (
         exists (
-            select 1 from ventas v
-            where v.folio = detalle_venta.venta_id
+            select 1 from pos_ventas v
+            where v.folio = pos_detalle_venta.venta_id
               and v.cajero_id = auth.uid()
         )
     );
-create policy "detalle_lectura" on detalle_venta
+create policy "detalle_lectura" on pos_detalle_venta
     for select to authenticated
     using (
         exists (
-            select 1 from ventas v
-            where v.folio = detalle_venta.venta_id
-              and (v.cajero_id = auth.uid() or es_admin())
+            select 1 from pos_ventas v
+            where v.folio = pos_detalle_venta.venta_id
+              and (v.cajero_id = auth.uid() or pos_es_admin())
         )
     );

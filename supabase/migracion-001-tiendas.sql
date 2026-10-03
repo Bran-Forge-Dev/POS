@@ -22,19 +22,22 @@ alter table pos_productos   add column if not exists tienda_id uuid references p
 alter table pos_proveedores add column if not exists tienda_id uuid references pos_tiendas(id);
 alter table pos_ventas      add column if not exists tienda_id uuid references pos_tiendas(id);
 
--- 3. Rol superadmin + regla: solo superadmin puede no tener tienda
+-- 3. Rol superadmin
 alter table pos_perfiles drop constraint if exists pos_perfiles_rol_check;
 alter table pos_perfiles add constraint pos_perfiles_rol_check
     check (rol in ('admin', 'cajero', 'superadmin'));
-alter table pos_perfiles drop constraint if exists pos_perfiles_tienda_check;
-alter table pos_perfiles add constraint pos_perfiles_tienda_check
-    check (tienda_id is not null or rol = 'superadmin');
 
 -- 4. Backfill: todo lo existente pasa a la tienda 'Principal'
+--    (ANTES de la constraint tienda_check, que valida filas viejas)
 update pos_perfiles    set tienda_id = (select id from pos_tiendas order by created_at limit 1) where tienda_id is null and rol <> 'superadmin';
 update pos_productos   set tienda_id = (select id from pos_tiendas order by created_at limit 1) where tienda_id is null;
 update pos_proveedores set tienda_id = (select id from pos_tiendas order by created_at limit 1) where tienda_id is null;
 update pos_ventas      set tienda_id = (select id from pos_tiendas order by created_at limit 1) where tienda_id is null;
+
+-- 4b. Regla: solo superadmin puede no tener tienda
+alter table pos_perfiles drop constraint if exists pos_perfiles_tienda_check;
+alter table pos_perfiles add constraint pos_perfiles_tienda_check
+    check (tienda_id is not null or rol = 'superadmin');
 
 -- 5. NOT NULL donde aplica (perfiles queda nullable por superadmin)
 alter table pos_productos   alter column tienda_id set not null;

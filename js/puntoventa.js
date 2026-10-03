@@ -269,12 +269,26 @@ document.addEventListener("DOMContentLoaded", function () {
         }, 100);
     });
 
-    // Enter para agregar desde campo código
+    // Enter para agregar desde campo código + detección de escáner
+    // (los escáneres teclean muy rápido; si no mandan Enter, agregamos al detectar la ráfaga)
+    let ultimaTecla = 0;
+    let timerEscaneo = null;
     inputCodigo.addEventListener("keydown", function (e) {
+        const ahora = Date.now();
+        const esRafaga = ahora - ultimaTecla < 40;
+        ultimaTecla = ahora;
+        clearTimeout(timerEscaneo);
+
         if (e.key === "Enter") {
             e.preventDefault();
             btnAgregar.click();
+            return;
         }
+        timerEscaneo = setTimeout(() => {
+            if (esRafaga && inputCodigo.value.trim().length >= 4) {
+                btnAgregar.click();
+            }
+        }, 90);
     });
 
     // Inicializar

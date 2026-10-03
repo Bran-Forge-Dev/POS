@@ -16,7 +16,7 @@ body {
 
 /* Fondo con imagen difuminada */
 .background {
-    background-image: url("https://bran-forge-dev.github.io/POS/imagenes/fondo.jpg");
+    background-image: url("../imagenes/fondo.jpg");
     background-size: cover;
     background-position: center;
     filter: blur(3px) brightness(0.8);
@@ -34,7 +34,7 @@ body {
     border-radius: 10px;
     padding: 40px 35px;
     width: 340px;
-    border: 2px solid #2c66ff;
+    border: 2px solid #c79a32;
     box-shadow: 0 4px 25px rgba(0, 0, 0, 0.15);
     text-align: left;
 }

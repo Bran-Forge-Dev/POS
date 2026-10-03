@@ -101,6 +101,18 @@ body {
         padding: 10px; /*Padding interno*/
     }
 
+    .tabla tbody tr {
+        cursor: pointer; /*Las filas del ticket son seleccionables*/
+    }
+
+    .tabla tbody tr:hover {
+        background-color: rgba(209, 166, 70, 0.15);
+    }
+
+    .tabla tbody tr.seleccionada {
+        background-color: rgba(209, 166, 70, 0.35);
+    }
+
 /*Contenedor para las acciones*/
 .acciones {
     display: flex;

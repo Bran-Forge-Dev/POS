@@ -29,6 +29,12 @@ header {
     color: #000;
 }
 
+#usuario-activo {
+    color: #555;
+    font-size: 14px;
+    font-weight: 600;
+}
+
 .logout {
     font-weight: bold;
     color: #c70000; /* rojo intenso */
@@ -172,4 +178,10 @@ footer {
     .btn-card:hover {
         background-color: #a77e22;
         transform: scale(1.05);
+    }
+
+    .btn-card.disabled {
+        opacity: 0.5;
+        pointer-events: none;
+        cursor: default;
     }

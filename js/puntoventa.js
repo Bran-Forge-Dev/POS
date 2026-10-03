@@ -1,28 +1,39 @@
 document.addEventListener("DOMContentLoaded", function () {
+    requerirSesion();
 
- 
-    //  Productos 
-    const productos = [
-        { codigo: "1001", descripcion: "Coca-Cola 600ml", precio: 18.00, existencia: 25 },
-        { codigo: "1002", descripcion: "Galletas Oreo", precio: 14.50, existencia: 10 },
-        { codigo: "1003", descripcion: "Sabritas 45g", precio: 12.00, existencia: 15 },
-        { codigo: "1004", descripcion: "Agua Bonafont 1L", precio: 13.00, existencia: 20 },
-        { codigo: "1005", descripcion: "Pan Bimbo Grande", precio: 42.00, existencia: 8 }
+    // Catálogo real desde localStorage (el mismo que alimenta AgregarProductos)
+    const PRODUCTOS_SEMILLA = [
+        { codigo: "1001", descripcion: "Coca-Cola 600ml", costo: 10.00, venta: 18.00, mayoreo: 16.00, cantidad: 25, minimo: 5 },
+        { codigo: "1002", descripcion: "Galletas Oreo", costo: 8.00, venta: 14.50, mayoreo: 13.00, cantidad: 10, minimo: 3 },
+        { codigo: "1003", descripcion: "Sabritas 45g", costo: 7.00, venta: 12.00, mayoreo: 10.50, cantidad: 15, minimo: 5 },
+        { codigo: "1004", descripcion: "Agua Bonafont 1L", costo: 8.00, venta: 13.00, mayoreo: 11.50, cantidad: 20, minimo: 6 },
+        { codigo: "1005", descripcion: "Pan Bimbo Grande", costo: 30.00, venta: 42.00, mayoreo: 38.00, cantidad: 8, minimo: 2 }
     ];
+
+    let productos = JSON.parse(localStorage.getItem("productos")) || [];
+    if (productos.length === 0) {
+        productos = PRODUCTOS_SEMILLA;
+        localStorage.setItem("productos", JSON.stringify(productos));
+    }
+
+    const guardarCatalogo = () => localStorage.setItem("productos", JSON.stringify(productos));
 
     // Elementos del DOM
     const btnAgregar = document.querySelector(".btn-agregar");
     const inputCodigo = document.getElementById("codigo");
     const tbody = document.querySelector(".tabla tbody");
-    const totalSpan = document.getElementById("total"); // <span id="total">Total:</span>
-    const montoFinalDiv = document.querySelector(".monto-final"); // <div class="monto-final">
-    const botonCobrar = document.querySelector(".btn.verde"); //  botón Cobrar
-    const productosCountP = document.querySelector(".acciones-izquierda p"); // el <p>0 Productos</p>
+    const totalSpan = document.getElementById("total");
+    const montoFinalDiv = document.querySelector(".monto-final");
+    const botonCobrar = document.querySelector(".btn.verde");
+    const botonCancelar = document.querySelector(".btn.gris");
+    const botonEliminar = document.querySelector(".btn.rojo");
+    const botonCambiar = document.querySelector(".btn.dorado");
+    const productosCountP = document.querySelector(".acciones-izquierda p");
 
     const pagoContainer = document.querySelector(".totales div:nth-child(2)");
     const cambioContainer = document.querySelector(".totales div:nth-child(3)");
 
-    // Asegurar el input de "Pago con" 
+    // Input de "Pago con"
     let inputPago = document.querySelector("#pagoCliente");
     if (!inputPago) {
         inputPago = document.createElement("input");
@@ -32,51 +43,79 @@ document.addEventListener("DOMContentLoaded", function () {
         inputPago.placeholder = "0.00";
         inputPago.style.width = "80px";
         inputPago.style.textAlign = "right";
-
-        pagoContainer.innerHTML = `<span>Págo con:</span><br/>`;
+        pagoContainer.innerHTML = "";
+        const lbl = document.createElement("span");
+        lbl.textContent = "Pago con:";
+        pagoContainer.appendChild(lbl);
+        pagoContainer.appendChild(document.createElement("br"));
         pagoContainer.appendChild(inputPago);
     }
 
-    // Crear span fijo para el cambio
+    // Span fijo para el cambio
     let cambioMonto = document.querySelector("#montoCambio");
     if (!cambioMonto) {
         cambioMonto = document.createElement("span");
         cambioMonto.id = "montoCambio";
         cambioMonto.textContent = "$0.00";
-        cambioContainer.innerHTML = `<span>Cambio:</span><br/>`;
+        cambioContainer.innerHTML = "";
+        const lbl = document.createElement("span");
+        lbl.textContent = "Cambio:";
+        cambioContainer.appendChild(lbl);
+        cambioContainer.appendChild(document.createElement("br"));
         cambioContainer.appendChild(cambioMonto);
     }
 
     let total = 0;
+    let filaSeleccionada = null;
+
+    function celda(texto) {
+        const td = document.createElement("td");
+        td.textContent = texto;
+        return td;
+    }
 
     function recalcularTotalesYUI() {
         total = 0;
-        const filas = [...tbody.rows];
-        filas.forEach(row => {
-            const importeTexto = row.cells[4].textContent.replace("$", "").trim();
-            const importe = parseFloat(importeTexto) || 0;
+        [...tbody.rows].forEach(row => {
+            const importe = parseFloat(row.cells[4].textContent.replace("$", "").trim()) || 0;
             total += importe;
         });
-
-        totalSpan.innerHTML = `<span>Total:</span> $${total.toFixed(2)}`;
+        totalSpan.innerHTML = "";
+        const lbl = document.createElement("span");
+        lbl.textContent = "Total:";
+        totalSpan.appendChild(lbl);
+        totalSpan.appendChild(document.createTextNode(" $" + total.toFixed(2)));
         montoFinalDiv.textContent = `$${total.toFixed(2)}`;
     }
 
     function actualizarContadorProductos() {
         let totalProductos = 0;
-
-        // Recorre todas las filas de la tabla
         for (let i = 0; i < tbody.rows.length; i++) {
-            // Sumar total de los productos
-            const celdaCantidad = tbody.rows[i].cells[3];
-            const cantidad = parseInt(celdaCantidad.textContent || celdaCantidad.innerText) || 0;
+            const cantidad = parseInt(tbody.rows[i].cells[3].textContent, 10) || 0;
             totalProductos += cantidad;
         }
-
-        productosCountP.textContent = `${totalProductos} Producto${totalProductos !== 1 ? 's' : ''}`;
+        productosCountP.textContent = `${totalProductos} Producto${totalProductos !== 1 ? "s" : ""}`;
     }
 
-    // Agregar producto
+    function seleccionarFila(fila) {
+        if (filaSeleccionada) filaSeleccionada.classList.remove("seleccionada");
+        filaSeleccionada = (filaSeleccionada === fila) ? null : fila;
+        if (filaSeleccionada) filaSeleccionada.classList.add("seleccionada");
+    }
+
+    function limpiarTicket() {
+        tbody.innerHTML = "";
+        filaSeleccionada = null;
+        total = 0;
+        recalcularTotalesYUI();
+        actualizarContadorProductos();
+        cambioMonto.textContent = "$0.00";
+        inputPago.value = "";
+        inputCodigo.value = "";
+        inputCodigo.focus();
+    }
+
+    // Agregar producto al ticket
     btnAgregar.addEventListener("click", function () {
         const codigo = inputCodigo.value.trim();
         if (!codigo) {
@@ -92,83 +131,142 @@ document.addEventListener("DOMContentLoaded", function () {
             return;
         }
 
-        // Si ya hay fila con ese código, aumenta cantidad y actualiza precio
         const filaExistente = [...tbody.rows].find(r => r.cells[0].textContent === codigo);
         if (filaExistente) {
             const cantidadCell = filaExistente.cells[3];
             const importeCell = filaExistente.cells[4];
-            let cantidad = parseInt(cantidadCell.textContent, 10) + 1;
-            cantidadCell.textContent = cantidad;
-            importeCell.textContent = `$${(producto.precio * cantidad).toFixed(2)}`;
+            const nuevaCantidad = parseInt(cantidadCell.textContent, 10) + 1;
+            if (nuevaCantidad > producto.cantidad) {
+                alert(`Sin existencia suficiente. Disponible: ${producto.cantidad}`);
+                inputCodigo.value = "";
+                inputCodigo.focus();
+                return;
+            }
+            cantidadCell.textContent = nuevaCantidad;
+            importeCell.textContent = `$${(producto.venta * nuevaCantidad).toFixed(2)}`;
         } else {
-            // Crear fila nueva con la misma estructura
+            if (producto.cantidad < 1) {
+                alert("Producto sin existencia.");
+                inputCodigo.value = "";
+                inputCodigo.focus();
+                return;
+            }
             const fila = document.createElement("tr");
-            fila.innerHTML = `
-                <td>${producto.codigo}</td>
-                <td>${producto.descripcion}</td>
-                <td>$${producto.precio.toFixed(2)}</td>
-                <td>1</td>
-                <td>$${producto.precio.toFixed(2)}</td>
-                <td>${producto.existencia}</td>
-            `;
+            fila.appendChild(celda(producto.codigo));
+            fila.appendChild(celda(producto.descripcion));
+            fila.appendChild(celda(`$${Number(producto.venta).toFixed(2)}`));
+            fila.appendChild(celda("1"));
+            fila.appendChild(celda(`$${Number(producto.venta).toFixed(2)}`));
+            fila.appendChild(celda(String(producto.cantidad)));
+            fila.addEventListener("click", () => seleccionarFila(fila));
             tbody.appendChild(fila);
         }
 
-        // Actualizar totales
         recalcularTotalesYUI();
         actualizarContadorProductos();
-
-        // limpiar input codigo
         inputCodigo.value = "";
         inputCodigo.focus();
     });
 
-    // mostrar cambio en el span, alert "Compra realizada" y al aceptar borrar todo
+    // Cancelar: limpia todo el ticket
+    botonCancelar.addEventListener("click", limpiarTicket);
+
+    // Eliminar: quita la fila seleccionada del ticket
+    botonEliminar.addEventListener("click", function () {
+        if (!filaSeleccionada) {
+            alert("Selecciona un producto del ticket primero (clic en la fila).");
+            return;
+        }
+        filaSeleccionada.remove();
+        filaSeleccionada = null;
+        recalcularTotalesYUI();
+        actualizarContadorProductos();
+    });
+
+    // Cambiar: edita la cantidad de la fila seleccionada
+    botonCambiar.addEventListener("click", function () {
+        if (!filaSeleccionada) {
+            alert("Selecciona un producto del ticket primero (clic en la fila).");
+            return;
+        }
+        const codigo = filaSeleccionada.cells[0].textContent;
+        const producto = productos.find(p => p.codigo === codigo);
+        const actual = parseInt(filaSeleccionada.cells[3].textContent, 10);
+        const entrada = prompt("Nueva cantidad:", actual);
+        if (entrada === null) return;
+
+        const nueva = parseInt(entrada, 10);
+        if (isNaN(nueva) || nueva <= 0) {
+            alert("Cantidad inválida.");
+            return;
+        }
+        if (nueva > producto.cantidad) {
+            alert(`Sin existencia suficiente. Disponible: ${producto.cantidad}`);
+            return;
+        }
+        filaSeleccionada.cells[3].textContent = nueva;
+        filaSeleccionada.cells[4].textContent = `$${(producto.venta * nueva).toFixed(2)}`;
+        recalcularTotalesYUI();
+        actualizarContadorProductos();
+    });
+
+    // Cobrar: valida pago, descuenta inventario y registra la venta
     botonCobrar.addEventListener("click", function (e) {
         e.preventDefault();
-
         recalcularTotalesYUI();
 
-        // tomar el total actualizado
         const totalActual = total || 0;
-
-        // leer el pago tal cual lo escribio el usuario
         const pagoVal = parseFloat(inputPago.value);
 
-        // validaciones
         if (totalActual === 0) {
             alert("No hay productos para cobrar.");
             return;
         }
-
         if (isNaN(pagoVal) || pagoVal <= 0) {
-            alert("Ingrese un monto válido en 'Págo con'.");
+            alert("Ingrese un monto válido en 'Pago con'.");
             return;
         }
-
         if (pagoVal < totalActual) {
             alert(`El pago es insuficiente. Faltan $${(totalActual - pagoVal).toFixed(2)}.`);
             return;
         }
 
-        // calcular y mostrar el cambio en el span fijo, no modificable
         const cambioTotal = pagoVal - totalActual;
         cambioMonto.textContent = `$${cambioTotal.toFixed(2)}`;
 
-        // mostrar el cambio y luego la alerta, con una pausa para refrescar el DOM)
+        // Descontar existencias y armar detalle de la venta
+        const items = [...tbody.rows].map(row => {
+            const codigo = row.cells[0].textContent;
+            const cantidad = parseInt(row.cells[3].textContent, 10);
+            const producto = productos.find(p => p.codigo === codigo);
+            if (producto) producto.cantidad -= cantidad;
+            return {
+                codigo,
+                descripcion: row.cells[1].textContent,
+                precio: producto ? producto.venta : 0,
+                cantidad
+            };
+        });
+        guardarCatalogo();
+
+        // Registrar la venta (folio, cajero, detalle, totales)
+        const ventas = JSON.parse(localStorage.getItem("ventas")) || [];
+        const sesion = getSesion();
+        ventas.push({
+            folio: ventas.length + 1,
+            fecha: new Date().toISOString(),
+            cajero: sesion ? sesion.cuenta : "desconocido",
+            items,
+            total: totalActual,
+            pago: pagoVal,
+            cambio: cambioTotal
+        });
+        localStorage.setItem("ventas", JSON.stringify(ventas));
+
         setTimeout(() => {
             alert("Compra realizada");
-
-            // al aceptar limpiar todo
-            tbody.innerHTML = "";
-            total = 0;
-            totalSpan.innerHTML = `<span>Total:</span><br/>$0.00`;
-            montoFinalDiv.textContent = "$0.00";
-            cambioMonto.textContent = "$0.00";
-            inputPago.value = "";
-            actualizarContadorProductos();
-            inputCodigo.focus();
-        }, 100); // 100 ms para que se pueda ver el cambio antes del alert
+            limpiarTicket();
+        }, 100);
     });
 
     // Enter para agregar desde campo código

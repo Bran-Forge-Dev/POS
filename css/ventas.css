@@ -124,6 +124,12 @@ body {
         transform: scale(0.99);
     }
 
+    .btn-card.disabled {
+        opacity: 0.5;
+        pointer-events: none;
+        cursor: default;
+    }
+
 
 @media (max-width: 600px) {
     .boton {

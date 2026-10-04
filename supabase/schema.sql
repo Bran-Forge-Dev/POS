@@ -277,10 +277,14 @@ begin
         raise exception 'Usuario no autorizado en NeoVenta';
     end if;
 
-    -- Corte abierto de la tienda (puede no haber: venta sin etiquetar)
+    -- Corte abierto obligatorio: sin caja abierta no se vende
     select id into v_corte
     from pos_cortes
     where tienda_id = v_tienda and estado = 'abierto';
+
+    if v_corte is null then
+        raise exception 'La caja está cerrada. Abre un corte en la sección Ventas antes de cobrar.';
+    end if;
 
     -- Validar existencia y calcular total en el servidor,
     -- solo contra productos de la propia tienda

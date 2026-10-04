@@ -16,8 +16,20 @@ document.addEventListener("DOMContentLoaded", async function () {
     }
     await cargarCatalogo();
 
+    // Aviso temprano: el servidor rechaza ventas si no hay corte abierto
+    const { data: cortesAbiertos } = await _supabase
+        .from("pos_cortes").select("id").eq("estado", "abierto").limit(1);
+    if (!cortesAbiertos || cortesAbiertos.length === 0) {
+        toast("La caja está cerrada: abre un corte en Ventas para poder cobrar.", "error");
+    }
+
     // Perfil en caché para datos del ticket (tienda + cajero)
     const perfil = await getPerfil();
+
+    // Búsqueda insensible a acentos y mayúsculas:
+    // "sabritas" encuentra "Sábritas", "coca" encuentra "Coca Cola"
+    const norm = s => (s || "").normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
 
     // Elementos del DOM
     const btnAgregar = document.querySelector(".btn-agregar");
@@ -117,23 +129,68 @@ document.addEventListener("DOMContentLoaded", async function () {
         inputCodigo.focus();
     }
 
-    // Agregar producto al ticket
-    btnAgregar.addEventListener("click", function () {
-        const codigo = inputCodigo.value.trim();
-        if (!codigo) {
-            toast("Ingresa un código.", "error");
+    // ---------- Búsqueda por nombre con sugerencias ----------
+    const campoBusqueda = inputCodigo.parentElement;
+    const sugDiv = document.createElement("div");
+    sugDiv.className = "nv-sugerencias";
+    sugDiv.hidden = true;
+    campoBusqueda.appendChild(sugDiv);
+
+    let sugerencias = [];
+    let sugSel = -1;
+
+    function ocultarSugerencias() {
+        sugDiv.hidden = true;
+        sugerencias = [];
+        sugSel = -1;
+    }
+
+    // Código: prefijo (para escáneres que teclean parcial);
+    // descripción: contiene (para buscar por nombre)
+    function buscarProductos(qn) {
+        if (!qn) return [];
+        return productos.filter(p =>
+            norm(p.codigo).startsWith(qn) || norm(p.descripcion).includes(qn)
+        ).slice(0, 8);
+    }
+
+    function renderSugerencias(lista) {
+        sugerencias = lista;
+        sugSel = -1;
+        if (!lista.length) {
+            ocultarSugerencias();
             return;
         }
+        sugDiv.textContent = "";
+        lista.forEach((p, i) => {
+            const item = document.createElement("div");
+            item.className = "sug";
+            const nombre = document.createElement("span");
+            nombre.textContent = p.descripcion;
+            const info = document.createElement("small");
+            info.textContent = `${p.codigo} · $${Number(p.venta).toFixed(2)}`;
+            item.append(nombre, info);
+            // mousedown llega antes que el blur del input
+            item.addEventListener("mousedown", e => {
+                e.preventDefault();
+                agregarProducto(p);
+                ocultarSugerencias();
+            });
+            sugDiv.appendChild(item);
+        });
+        sugDiv.hidden = false;
+    }
 
-        const producto = productos.find(p => p.codigo === codigo);
-        if (!producto) {
-            toast("Producto no encontrado.", "error");
-            inputCodigo.value = "";
-            inputCodigo.focus();
-            return;
-        }
+    function moverSeleccion(delta) {
+        if (!sugerencias.length) return;
+        sugSel = (sugSel + delta + sugerencias.length) % sugerencias.length;
+        [...sugDiv.children].forEach((el, i) =>
+            el.classList.toggle("activa", i === sugSel));
+    }
 
-        const filaExistente = [...tbody.rows].find(r => r.cells[0].textContent === codigo);
+    // Agrega o incrementa la fila del producto en el ticket
+    function agregarProducto(producto) {
+        const filaExistente = [...tbody.rows].find(r => r.cells[0].textContent === producto.codigo);
         let cantidadEnTicket;
         if (filaExistente) {
             const cantidadCell = filaExistente.cells[3];
@@ -178,7 +235,57 @@ document.addEventListener("DOMContentLoaded", async function () {
         actualizarContadorProductos();
         inputCodigo.value = "";
         inputCodigo.focus();
+    }
+
+    // Resuelve lo escrito a un producto: código exacto, sugerencia
+    // elegida con flechas, o coincidencia única por nombre
+    function resolverProducto() {
+        const q = inputCodigo.value.trim();
+        if (!q) {
+            toast("Ingresa un código o nombre.", "error");
+            return null;
+        }
+
+        let producto = productos.find(p => p.codigo === q);
+        if (!producto) {
+            const coincidencias = buscarProductos(norm(q));
+            if (sugSel >= 0 && sugerencias[sugSel]) {
+                producto = sugerencias[sugSel];
+            } else if (coincidencias.length === 1 && !/^\d+$/.test(q)) {
+                // Por nombre: una sola coincidencia se agrega directo.
+                // Los puros dígitos exigen elegir de la lista para que
+                // un código escaneado desconocido no agregue otro producto.
+                producto = coincidencias[0];
+            } else if (coincidencias.length > 0) {
+                toast("Hay varias coincidencias: elige de la lista (flechas o clic).", "info");
+                return null;
+            } else {
+                toast("Producto no encontrado.", "error");
+                inputCodigo.value = "";
+                inputCodigo.focus();
+                return null;
+            }
+        }
+        ocultarSugerencias();
+        return producto;
+    }
+
+    // Agregar producto al ticket
+    btnAgregar.addEventListener("click", function () {
+        const producto = resolverProducto();
+        if (producto) agregarProducto(producto);
     });
+
+    // Sugerencias mientras se escribe
+    inputCodigo.addEventListener("input", function () {
+        const q = inputCodigo.value.trim();
+        if (q.length < 2 || productos.some(p => p.codigo === q)) {
+            ocultarSugerencias();
+            return;
+        }
+        renderSugerencias(buscarProductos(norm(q)));
+    });
+    inputCodigo.addEventListener("blur", () => setTimeout(ocultarSugerencias, 150));
 
     // Cancelar: limpia todo el ticket
     botonCancelar.addEventListener("click", limpiarTicket);
@@ -329,6 +436,20 @@ document.addEventListener("DOMContentLoaded", async function () {
         ultimaTecla = ahora;
         clearTimeout(timerEscaneo);
 
+        if (e.key === "ArrowDown") {
+            e.preventDefault();
+            moverSeleccion(1);
+            return;
+        }
+        if (e.key === "ArrowUp") {
+            e.preventDefault();
+            moverSeleccion(-1);
+            return;
+        }
+        if (e.key === "Escape") {
+            ocultarSugerencias();
+            return;
+        }
         if (e.key === "Enter") {
             e.preventDefault();
             btnAgregar.click();

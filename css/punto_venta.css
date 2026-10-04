@@ -61,6 +61,47 @@ body {
         border-radius: 4px; /*Redondeo del input*/
     }
 
+
+/*Campo de busqueda con lista de sugerencias por nombre*/
+.busqueda-campo {
+    position: relative;
+}
+
+.nv-sugerencias {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 340px;
+    margin-top: 2px;
+    background: #fff;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-shadow: 0 4px 12px rgba(0,0,0,.15);
+    z-index: 60;
+    max-height: 220px;
+    overflow-y: auto;
+}
+
+    .nv-sugerencias .sug {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 8px;
+        padding: 7px 10px;
+        cursor: pointer;
+        font-size: .9rem;
+    }
+
+    .nv-sugerencias .sug small {
+        color: #888;
+        white-space: nowrap;
+    }
+
+    .nv-sugerencias .sug:hover,
+    .nv-sugerencias .sug.activa {
+        background: #fdf3d7;
+    }
+
 .btn-agregar {
     background-color: #ccc; /*Fondo del boton regresar*/
     border: none; /*Sin borde*/

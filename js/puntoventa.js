@@ -16,6 +16,9 @@ document.addEventListener("DOMContentLoaded", async function () {
     }
     await cargarCatalogo();
 
+    // Perfil en caché para datos del ticket (tienda + cajero)
+    const perfil = await getPerfil();
+
     // Elementos del DOM
     const btnAgregar = document.querySelector(".btn-agregar");
     const inputCodigo = document.getElementById("codigo");
@@ -254,16 +257,96 @@ document.addEventListener("DOMContentLoaded", async function () {
             return;
         }
 
+        // Ticket imprimible con los datos de la venta registrada
+        mostrarTicket({
+            folio,
+            tienda: perfil && perfil.pos_tiendas ? perfil.pos_tiendas.nombre : "NeoVenta",
+            cajero: perfil ? perfil.cuenta : "",
+            items: items.map(it => {
+                const p = productos.find(x => x.id === it.producto_id);
+                return {
+                    cantidad: it.cantidad,
+                    descripcion: p.descripcion,
+                    importe: Number(p.venta) * it.cantidad
+                };
+            }),
+            total: totalActual,
+            pago: pagoVal,
+            cambio: cambioTotal
+        });
+
         // Reflejar el nuevo stock en el catálogo local
         items.forEach(it => {
             const p = productos.find(x => x.id === it.producto_id);
             if (p) p.cantidad -= it.cantidad;
         });
+    });
 
-        setTimeout(() => {
-            alert(`Compra realizada · Folio ${folio}`);
-            limpiarTicket();
-        }, 100);
+    // ---------- Ticket de venta ----------
+
+    const overlay = document.getElementById("ticketOverlay");
+
+    function mostrarTicket(v) {
+        document.getElementById("tkTienda").textContent = v.tienda;
+        document.getElementById("tkFolioFecha").textContent =
+            `Folio: ${String(v.folio).padStart(6, "0")}  ${new Date().toLocaleString("es-MX")}`;
+        document.getElementById("tkCajero").textContent = `Atendió: ${v.cajero}`;
+
+        const tabla = document.getElementById("tkItems");
+        tabla.textContent = "";
+        const enc = document.createElement("thead");
+        const filaEnc = document.createElement("tr");
+        ["Cant", "Producto", "Importe"].forEach((t, i) => {
+            const th = document.createElement("th");
+            th.textContent = t;
+            if (i === 2) th.className = "num";
+            filaEnc.appendChild(th);
+        });
+        enc.appendChild(filaEnc);
+        tabla.appendChild(enc);
+
+        const tb = document.createElement("tbody");
+        v.items.forEach(it => {
+            const tr = document.createElement("tr");
+            const c1 = document.createElement("td");
+            c1.textContent = it.cantidad;
+            const c2 = document.createElement("td");
+            c2.textContent = it.descripcion;
+            const c3 = document.createElement("td");
+            c3.className = "num";
+            c3.textContent = "$" + it.importe.toFixed(2);
+            tr.append(c1, c2, c3);
+            tb.appendChild(tr);
+        });
+        tabla.appendChild(tb);
+
+        const tot = document.getElementById("tkTotales");
+        tot.textContent = "";
+        const linea = (lbl, val, grande) => {
+            const d = document.createElement("div");
+            d.className = "fila" + (grande ? " grande" : "");
+            const s1 = document.createElement("span");
+            s1.textContent = lbl;
+            const s2 = document.createElement("span");
+            s2.textContent = "$" + val.toFixed(2);
+            d.append(s1, s2);
+            return d;
+        };
+        tot.append(
+            linea("TOTAL", v.total, true),
+            linea("Pago", v.pago),
+            linea("Cambio", v.cambio)
+        );
+
+        overlay.hidden = false;
+    }
+
+    document.getElementById("btnImprimir").addEventListener("click", function () {
+        window.print();
+    });
+    document.getElementById("btnCerrarTicket").addEventListener("click", function () {
+        overlay.hidden = true;
+        limpiarTicket();
     });
 
     // Enter para agregar desde campo código + detección de escáner

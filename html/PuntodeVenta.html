@@ -72,6 +72,28 @@
             </div>
         </div>
     </main>
+
+    <!-- Ticket de venta (modal tras cobrar; en impresión solo sale este bloque) -->
+    <div class="ticket-overlay" id="ticketOverlay" hidden>
+        <div class="ticket" id="ticket">
+            <div class="ticket-encabezado">
+                <p class="ticket-negocio" id="tkTienda"></p>
+                <p class="ticket-sub">NeoVenta · Punto de venta</p>
+                <p id="tkFolioFecha"></p>
+                <p id="tkCajero"></p>
+            </div>
+            <table class="ticket-items" id="tkItems"></table>
+            <div class="ticket-totales" id="tkTotales"></div>
+            <p class="ticket-gracias">¡Gracias por su compra!</p>
+        </div>
+        <div class="ticket-acciones">
+            <button id="btnImprimir" class="btn verde" type="button">
+                <i class="las la-print"></i> Imprimir
+            </button>
+            <button id="btnCerrarTicket" class="btn gris" type="button">Cerrar</button>
+        </div>
+    </div>
+
     <script src="../js/puntoventa.js"></script>
 </body>
 </html>

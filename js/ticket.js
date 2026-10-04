@@ -27,14 +27,25 @@
             max-height: 80vh; overflow-y: auto;
         }
         .nv-ticket .encabezado {
-            text-align: center; border-bottom: 1px dashed #000;
-            padding-bottom: 6px; margin-bottom: 6px;
+            border-bottom: 1px dashed #000;
+            padding-bottom: 8px; margin-bottom: 6px;
         }
-        .nv-ticket .encabezado p { margin: 2px 0; }
+        .nv-ticket .encabezado p { margin: 0; }
         .nv-ticket .negocio {
             font-weight: 700; font-size: 15px; text-transform: uppercase;
+            text-align: center; margin-bottom: 2px !important;
         }
-        .nv-ticket .sub { font-size: 10px; color: #444; }
+        .nv-ticket .sub {
+            font-size: 10px; color: #444;
+            text-align: center; margin-bottom: 8px !important;
+        }
+        .nv-ticket .datos {
+            display: flex; flex-direction: column; gap: 3px;
+            font-size: 11px;
+        }
+        .nv-ticket .datos .fila {
+            display: flex; justify-content: space-between;
+        }
         .nv-ticket table { width: 100%; border-collapse: collapse; }
         .nv-ticket th {
             border-bottom: 1px dashed #000; padding: 3px 2px;
@@ -94,8 +105,11 @@ function _nvTicketDOM() {
             <div class="encabezado">
                 <p class="negocio" id="nvTkTienda"></p>
                 <p class="sub">NeoVenta · Punto de venta</p>
-                <p id="nvTkFolioFecha"></p>
-                <p id="nvTkCajero"></p>
+                <div class="datos">
+                    <div class="fila"><span>Folio:</span><span id="nvTkFolio"></span></div>
+                    <div class="fila"><span>Fecha:</span><span id="nvTkFecha"></span></div>
+                    <div class="fila"><span>Atendió:</span><span id="nvTkCajero"></span></div>
+                </div>
             </div>
             <div class="sello-cancelada" id="nvTkSello" hidden>— CANCELADA —</div>
             <table id="nvTkItems"></table>
@@ -126,9 +140,9 @@ function nvTicket(v, onCerrar) {
 
     document.getElementById("nvTkTienda").textContent = v.tienda || "NeoVenta";
     const fecha = v.fecha ? new Date(v.fecha) : new Date();
-    document.getElementById("nvTkFolioFecha").textContent =
-        `Folio: ${String(v.folio).padStart(6, "0")}  ${fecha.toLocaleString("es-MX")}`;
-    document.getElementById("nvTkCajero").textContent = `Atendió: ${v.cajero || ""}`;
+    document.getElementById("nvTkFolio").textContent = String(v.folio).padStart(6, "0");
+    document.getElementById("nvTkFecha").textContent = fecha.toLocaleString("es-MX");
+    document.getElementById("nvTkCajero").textContent = v.cajero || "";
     document.getElementById("nvTkSello").hidden = !v.cancelada;
 
     const tabla = document.getElementById("nvTkItems");

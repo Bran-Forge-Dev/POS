@@ -7,8 +7,36 @@ document.addEventListener("DOMContentLoaded", async function () {
         usuarioSpan.textContent = `${perfil.cuenta} · ${perfil.rol}${tienda}`;
     }
 
-    // Selecciona el enlace Cerrar sesión
-    const logoutLink = document.querySelector(".logout");
+    // Cambiar contraseña: self-service del usuario logueado
+    const linkClave = document.getElementById("linkCambiarClave");
+    if (linkClave) {
+        linkClave.addEventListener("click", async function (e) {
+            e.preventDefault();
+            const valores = await preguntarCampos("Cambiar contraseña", [
+                { label: "Nueva contraseña", tipo: "password" },
+                { label: "Confirmar contraseña", tipo: "password" }
+            ]);
+            if (!valores) return;
+            const [c1, c2] = valores;
+            if (c1.length < 6) {
+                toast("La contraseña debe tener mínimo 6 caracteres.", "error");
+                return;
+            }
+            if (c1 !== c2) {
+                toast("Las contraseñas no coinciden.", "error");
+                return;
+            }
+            const { error } = await _supabase.auth.updateUser({ password: c1 });
+            if (error) {
+                toast("No se pudo cambiar: " + error.message, "error");
+            } else {
+                toast("Contraseña actualizada.", "ok");
+            }
+        });
+    }
+
+    // Selecciona el enlace Cerrar sesión (el que apunta al login)
+    const logoutLink = document.querySelector('a.logout[href="../index.html"]');
 
     if (logoutLink) {
         logoutLink.addEventListener("click", async function (e) {

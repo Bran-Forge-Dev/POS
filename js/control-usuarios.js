@@ -37,6 +37,7 @@ function actualizarTablaUsuarios() {
         fila.appendChild(celda(usuario.correo));
         fila.appendChild(celdaIcono("la-trash-alt", () => eliminarUsuario(index)));
         fila.appendChild(celdaIcono("la-edit", () => editarUsuario(index)));
+        fila.appendChild(celdaIcono("la-key", () => resetearClave(index)));
         tbody.appendChild(fila);
     });
 }
@@ -119,6 +120,33 @@ async function editarUsuario(index) {
     listaUsuarios[index] = { ...usuario, ...cambios };
     actualizarTablaUsuarios();
     toast("Usuario actualizado.", "ok");
+}
+
+// ===============================
+// Resetear contraseña de un usuario (Edge Function admin-reset-password)
+// El servidor valida: admin solo dentro de su tienda, superadmin todo.
+// ===============================
+async function resetearClave(index) {
+    const usuario = listaUsuarios[index];
+    const valores = await preguntarCampos(`Nueva contraseña para ${usuario.cuenta}`, [
+        { label: "Contraseña", tipo: "password" }
+    ]);
+    if (!valores) return;
+    const nueva = valores[0];
+    if (nueva.length < 6) {
+        toast("La contraseña debe tener mínimo 6 caracteres.", "error");
+        return;
+    }
+
+    const { error } = await _supabase.functions.invoke("admin-reset-password", {
+        body: { perfil_id: usuario.id, nueva_clave: nueva }
+    });
+
+    if (error) {
+        toast("No se pudo resetear: " + error.message, "error");
+        return;
+    }
+    toast(`Contraseña de ${usuario.cuenta} actualizada.`, "ok");
 }
 
 // ===============================

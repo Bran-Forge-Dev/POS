@@ -107,6 +107,7 @@ function _nvModal({ titulo, mensaje, campos = [], textoAceptar = "Aceptar", canc
             const lbl = document.createElement("label");
             lbl.textContent = c.label;
             const inp = document.createElement("input");
+            inp.type = c.tipo || "text";
             inp.value = c.valor != null ? c.valor : "";
             modal.append(lbl, inp);
             return inp;

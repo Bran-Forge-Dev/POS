@@ -7,8 +7,8 @@ document.addEventListener("DOMContentLoaded", async function () {
         usuarioSpan.textContent = `${perfil.cuenta} · ${perfil.rol}${tienda}`;
     }
 
-    // Cambiar contraseña: self-service del usuario logueado.
-    // Disponible desde el link del header y el ícono del footer.
+    // Cambiar contraseña: self-service del usuario logueado,
+    // desde el ícono de ajustes del footer.
     async function cambiarClave(e) {
         e.preventDefault();
         const valores = await preguntarCampos("Cambiar contraseña", [
@@ -33,8 +33,6 @@ document.addEventListener("DOMContentLoaded", async function () {
         }
     }
 
-    const linkClave = document.getElementById("linkCambiarClave");
-    if (linkClave) linkClave.addEventListener("click", cambiarClave);
     const iconoAjustes = document.getElementById("iconoAjustes");
     if (iconoAjustes) iconoAjustes.addEventListener("click", cambiarClave);
 

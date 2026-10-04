@@ -31,6 +31,9 @@ create table if not exists pos_perfiles (
     telefono text default '',
     correo text default '',
     fecha_nacimiento date,
+    -- false = usuario desactivado (con historial: no se puede
+    -- borrar auth.users porque ventas/cortes lo referencian)
+    activo boolean not null default true,
     created_at timestamptz not null default now(),
     check (tienda_id is not null or rol = 'superadmin')
 );
@@ -125,7 +128,8 @@ returns uuid
 language sql stable security definer
 set search_path = public
 as $$
-    select tienda_id from pos_perfiles where id = auth.uid()
+    select tienda_id from pos_perfiles
+    where id = auth.uid() and activo
 $$;
 
 create or replace function pos_es_admin()
@@ -135,7 +139,7 @@ set search_path = public
 as $$
     select exists (
         select 1 from pos_perfiles
-        where id = auth.uid() and rol = 'admin'
+        where id = auth.uid() and rol = 'admin' and activo
     );
 $$;
 
@@ -146,7 +150,7 @@ set search_path = public
 as $$
     select exists (
         select 1 from pos_perfiles
-        where id = auth.uid() and rol = 'superadmin'
+        where id = auth.uid() and rol = 'superadmin' and activo
     );
 $$;
 
@@ -159,7 +163,7 @@ set search_path = public
 as $$
     select exists (
         select 1 from pos_perfiles
-        where id = auth.uid()
+        where id = auth.uid() and activo
     );
 $$;
 

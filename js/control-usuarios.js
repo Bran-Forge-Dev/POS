@@ -46,6 +46,7 @@ async function cargarUsuarios() {
     const { data, error } = await _supabase
         .from("pos_perfiles")
         .select("*")
+        .eq("activo", true)
         .order("cuenta");
 
     if (error) {
@@ -58,9 +59,10 @@ async function cargarUsuarios() {
 }
 
 // ===============================
-// Función para eliminar usuario
-// Nota: elimina el perfil (acceso al POS). La cuenta de auth
-// queda registrada en el panel de Supabase sin acceso a datos.
+// Eliminar usuario por completo (Edge Function).
+// Sin historial: borra auth + perfil (el email queda libre).
+// Con historial: soft delete + activo=false — conserva la
+// auditoría de sus ventas/cortes y bloquea su acceso.
 // ===============================
 async function eliminarUsuario(index) {
     const usuario = listaUsuarios[index];
@@ -69,20 +71,29 @@ async function eliminarUsuario(index) {
         toast("No puedes eliminar tu propia cuenta en sesión.", "error");
         return;
     }
-    if (!await confirmar("¿Deseas eliminar este usuario?")) return;
+    if (!await confirmar(
+        `¿Eliminar a ${usuario.cuenta}?\n` +
+        "Si tiene ventas registradas se desactivará para conservar el historial."
+    )) return;
 
-    const { error } = await _supabase
-        .from("pos_perfiles")
-        .delete()
-        .eq("id", usuario.id);
+    const { data, error } = await _supabase.functions.invoke("admin-reset-password", {
+        body: { perfil_id: usuario.id, accion: "eliminar" }
+    });
 
     if (error) {
-        toast("No se pudo eliminar: " + error.message, "error");
+        let detalle = error.message;
+        try {
+            const cuerpo = await error.context?.json();
+            if (cuerpo?.error) detalle = cuerpo.error;
+        } catch { /* respuesta sin cuerpo */ }
+        toast("No se pudo eliminar: " + detalle, "error");
         return;
     }
     listaUsuarios.splice(index, 1);
     actualizarTablaUsuarios();
-    toast("Usuario eliminado.", "ok");
+    toast(data && data.desactivado
+        ? `${usuario.cuenta} desactivado: tenía ventas registradas, se conserva su historial.`
+        : "Usuario eliminado por completo.", "ok");
 }
 
 // ===============================
@@ -143,7 +154,12 @@ async function resetearClave(index) {
     });
 
     if (error) {
-        toast("No se pudo resetear: " + error.message, "error");
+        let detalle = error.message;
+        try {
+            const cuerpo = await error.context?.json();
+            if (cuerpo?.error) detalle = cuerpo.error;
+        } catch { /* respuesta sin cuerpo */ }
+        toast("No se pudo resetear: " + detalle, "error");
         return;
     }
     toast(`Contraseña de ${usuario.cuenta} actualizada.`, "ok");

@@ -1,8 +1,11 @@
 // ============================================================
 // Edge Function: admin-reset-password
-// Permite a un admin resetear la contraseña de usuarios de SU
-// tienda (o al superadmin de cualquiera). Usa service_role —
-// NUNCA exponer esa llave en el frontend.
+// accion "reset"    -> admin resetea contraseña de usuarios de SU
+//                      tienda (superadmin: de cualquiera).
+// accion "eliminar" -> borra al usuario: hard delete si no tiene
+//                      historial; soft delete + activo=false si
+//                      tiene ventas/cortes (conserva auditoría).
+// Usa service_role — NUNCA exponer esa llave en el frontend.
 //
 // Desplegar en: Supabase Dashboard -> Edge Functions ->
 //   New function -> nombre "admin-reset-password" -> pegar.
@@ -29,8 +32,12 @@ Deno.serve(async (req) => {
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) return resp({ error: "Sin sesión" }, 401);
 
-    const { perfil_id, nueva_clave } = await req.json().catch(() => ({}));
-    if (!perfil_id || typeof nueva_clave !== "string" || nueva_clave.length < 6) {
+    const { perfil_id, nueva_clave, accion } = await req.json().catch(() => ({}));
+    const esEliminar = accion === "eliminar";
+    if (!perfil_id) {
+        return resp({ error: "Datos inválidos" }, 400);
+    }
+    if (!esEliminar && (typeof nueva_clave !== "string" || nueva_clave.length < 6)) {
         return resp({ error: "Datos inválidos (clave mínimo 6 caracteres)" }, 400);
     }
 
@@ -62,8 +69,46 @@ Deno.serve(async (req) => {
         || (caller.rol === "admin"
             && target.tienda_id === caller.tienda_id
             && target.rol !== "superadmin");
-    if (!ok) return resp({ error: "Sin permiso para resetear a este usuario" }, 403);
+    if (!ok) return resp({ error: "Sin permiso sobre este usuario" }, 403);
 
+    // ---------- Eliminar usuario ----------
+    if (esEliminar) {
+        if (perfil_id === user.id) {
+            return resp({ error: "No puedes eliminar tu propia cuenta" }, 400);
+        }
+
+        // ventas/cortes referencian auth.users sin cascade: con
+        // historial no se puede borrar físicamente -> desactivar
+        const [{ count: ventas }, { count: cortes }, { count: cancelaciones }] =
+            await Promise.all([
+                supaAdmin.from("pos_ventas")
+                    .select("*", { count: "exact", head: true })
+                    .eq("cajero_id", perfil_id),
+                supaAdmin.from("pos_cortes")
+                    .select("*", { count: "exact", head: true })
+                    .eq("cajero_id", perfil_id),
+                supaAdmin.from("pos_ventas")
+                    .select("*", { count: "exact", head: true })
+                    .eq("cancelada_por", perfil_id)
+            ]);
+        const conHistorial =
+            (ventas ?? 0) + (cortes ?? 0) + (cancelaciones ?? 0) > 0;
+
+        // soft delete conserva el registro de auth (FK válidas) y
+        // bloquea el login; hard delete borra todo y libera el email
+        const { error } = await supaAdmin.auth.admin.deleteUser(
+            perfil_id, conHistorial
+        );
+        if (error) return resp({ error: error.message }, 500);
+
+        if (conHistorial) {
+            await supaAdmin.from("pos_perfiles")
+                .update({ activo: false }).eq("id", perfil_id);
+        }
+        return resp({ ok: true, desactivado: conHistorial });
+    }
+
+    // ---------- Reset de contraseña ----------
     const { error } = await supaAdmin.auth.admin.updateUserById(
         perfil_id, { password: nueva_clave }
     );

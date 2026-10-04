@@ -352,7 +352,10 @@ body {
         max-height: none;
         overflow: visible;
         box-shadow: none;
-        padding: 0;
+        /* padding interno para que el texto no llegue al borde del rollo */
+        padding: 0 2mm;
+        /* compensa el área no imprimible del borde izquierdo */
+        margin-left: 8mm;
     }
 
     .ticket-acciones {
@@ -360,6 +363,6 @@ body {
     }
 
     @page {
-        margin: 5mm;
+        margin: 10mm 5mm 10mm 0;
     }
 }

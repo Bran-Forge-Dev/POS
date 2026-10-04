@@ -355,7 +355,7 @@ body {
         /* padding interno para que el texto no llegue al borde del rollo */
         padding: 0 2mm;
         /* compensa el área no imprimible del borde izquierdo */
-        margin-left: 8mm;
+        margin-left: 12mm;
     }
 
     .ticket-acciones {

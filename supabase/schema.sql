@@ -267,6 +267,7 @@ declare
     v_folio bigint;
     v_tienda uuid;
     v_corte bigint;
+    v_precio numeric;
     v_total numeric := 0;
     item jsonb;
     prod record;
@@ -299,7 +300,10 @@ begin
                 prod.descripcion, prod.cantidad;
         end if;
 
-        v_total := v_total + prod.venta * (item->>'cantidad')::int;
+        -- El servidor decide el precio; el cliente solo pide la modalidad
+        v_precio := case when coalesce((item->>'es_mayoreo')::boolean, false)
+                         then prod.mayoreo else prod.venta end;
+        v_total := v_total + v_precio * (item->>'cantidad')::int;
     end loop;
 
     if p_pago < v_total then
@@ -317,7 +321,10 @@ begin
           and tienda_id = v_tienda;
 
         insert into pos_detalle_venta (venta_id, producto_id, codigo, descripcion, precio, cantidad)
-        select v_folio, p.id, p.codigo, p.descripcion, p.venta, (item->>'cantidad')::int
+        select v_folio, p.id, p.codigo, p.descripcion,
+               case when coalesce((item->>'es_mayoreo')::boolean, false)
+                    then p.mayoreo else p.venta end,
+               (item->>'cantidad')::int
         from pos_productos p
         where p.id = (item->>'producto_id')::bigint;
     end loop;

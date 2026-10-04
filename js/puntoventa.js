@@ -29,6 +29,7 @@ document.addEventListener("DOMContentLoaded", async function () {
     const botonCancelar = document.querySelector(".btn.gris");
     const botonEliminar = document.querySelector(".btn.rojo");
     const botonCambiar = document.querySelector(".btn.dorado");
+    const botonMayoreo = document.querySelector(".btn.azul");
     const productosCountP = document.querySelector(".acciones-izquierda p");
 
     const pagoContainer = document.querySelector(".totales div:nth-child(2)");
@@ -133,19 +134,23 @@ document.addEventListener("DOMContentLoaded", async function () {
         }
 
         const filaExistente = [...tbody.rows].find(r => r.cells[0].textContent === codigo);
+        let cantidadEnTicket;
         if (filaExistente) {
             const cantidadCell = filaExistente.cells[3];
             const importeCell = filaExistente.cells[4];
-            const nuevaCantidad = parseInt(cantidadCell.textContent, 10) + 1;
-            if (nuevaCantidad > producto.cantidad) {
+            cantidadEnTicket = parseInt(cantidadCell.textContent, 10) + 1;
+            if (cantidadEnTicket > producto.cantidad) {
                 toast(`Sin existencia suficiente. Disponible: ${producto.cantidad}`, "error");
                 inputCodigo.value = "";
                 inputCodigo.focus();
                 return;
             }
-            cantidadCell.textContent = nuevaCantidad;
-            importeCell.textContent = `$${(producto.venta * nuevaCantidad).toFixed(2)}`;
+            cantidadCell.textContent = cantidadEnTicket;
+            // respeta el precio aplicado en la fila (venta o mayoreo)
+            const precioUnit = parseFloat(filaExistente.cells[2].textContent.replace("$", ""));
+            importeCell.textContent = `$${(precioUnit * cantidadEnTicket).toFixed(2)}`;
         } else {
+            cantidadEnTicket = 1;
             if (producto.cantidad < 1) {
                 toast("Producto sin existencia.", "error");
                 inputCodigo.value = "";
@@ -161,6 +166,12 @@ document.addEventListener("DOMContentLoaded", async function () {
             fila.appendChild(celda(String(producto.cantidad)));
             fila.addEventListener("click", () => seleccionarFila(fila));
             tbody.appendChild(fila);
+        }
+
+        // Aviso de stock bajo al quedar en o por debajo del mínimo
+        const restante = producto.cantidad - cantidadEnTicket;
+        if (Number(producto.minimo) > 0 && restante <= Number(producto.minimo)) {
+            toast(`Stock bajo: ${producto.descripcion} quedará en ${restante} (mínimo ${producto.minimo})`, "info");
         }
 
         recalcularTotalesYUI();
@@ -206,7 +217,32 @@ document.addEventListener("DOMContentLoaded", async function () {
             return;
         }
         filaSeleccionada.cells[3].textContent = nueva;
-        filaSeleccionada.cells[4].textContent = `$${(producto.venta * nueva).toFixed(2)}`;
+        // respeta el precio aplicado en la fila (venta o mayoreo)
+        const precioUnit = parseFloat(filaSeleccionada.cells[2].textContent.replace("$", ""));
+        filaSeleccionada.cells[4].textContent = `$${(precioUnit * nueva).toFixed(2)}`;
+        recalcularTotalesYUI();
+        actualizarContadorProductos();
+    });
+
+    // Mayoreo: alterna el precio de la fila seleccionada entre
+    // precio de venta y precio de mayoreo del catálogo
+    botonMayoreo.addEventListener("click", function () {
+        if (!filaSeleccionada) {
+            toast("Selecciona un producto del ticket primero (clic en la fila).", "error");
+            return;
+        }
+        const codigo = filaSeleccionada.cells[0].textContent;
+        const producto = productos.find(p => p.codigo === codigo);
+        const cantidad = parseInt(filaSeleccionada.cells[3].textContent, 10);
+        const precioCell = filaSeleccionada.cells[2];
+        const esMayoreo = filaSeleccionada.dataset.mayoreo === "1";
+
+        const precioNuevo = esMayoreo ? Number(producto.venta) : Number(producto.mayoreo);
+        filaSeleccionada.dataset.mayoreo = esMayoreo ? "" : "1";
+        precioCell.textContent = `$${precioNuevo.toFixed(2)}`;
+        precioCell.classList.toggle("precio-mayoreo", !esMayoreo);
+        filaSeleccionada.cells[4].textContent = `$${(precioNuevo * cantidad).toFixed(2)}`;
+
         recalcularTotalesYUI();
         actualizarContadorProductos();
     });
@@ -242,7 +278,8 @@ document.addEventListener("DOMContentLoaded", async function () {
             const producto = productos.find(p => p.codigo === codigo);
             return {
                 producto_id: producto.id,
-                cantidad: parseInt(row.cells[3].textContent, 10)
+                cantidad: parseInt(row.cells[3].textContent, 10),
+                es_mayoreo: row.dataset.mayoreo === "1"
             };
         });
 
@@ -257,23 +294,21 @@ document.addEventListener("DOMContentLoaded", async function () {
             return;
         }
 
-        // Ticket imprimible con los datos de la venta registrada
-        mostrarTicket({
+        // Ticket imprimible con los precios aplicados en cada fila
+        const ticketItems = [...tbody.rows].map(row => ({
+            cantidad: parseInt(row.cells[3].textContent, 10),
+            descripcion: row.cells[1].textContent,
+            importe: parseFloat(row.cells[4].textContent.replace("$", ""))
+        }));
+        nvTicket({
             folio,
             tienda: perfil && perfil.pos_tiendas ? perfil.pos_tiendas.nombre : "NeoVenta",
             cajero: perfil ? perfil.cuenta : "",
-            items: items.map(it => {
-                const p = productos.find(x => x.id === it.producto_id);
-                return {
-                    cantidad: it.cantidad,
-                    descripcion: p.descripcion,
-                    importe: Number(p.venta) * it.cantidad
-                };
-            }),
+            items: ticketItems,
             total: totalActual,
             pago: pagoVal,
             cambio: cambioTotal
-        });
+        }, limpiarTicket);
 
         // Reflejar el nuevo stock en el catálogo local
         items.forEach(it => {
@@ -282,72 +317,7 @@ document.addEventListener("DOMContentLoaded", async function () {
         });
     });
 
-    // ---------- Ticket de venta ----------
-
-    const overlay = document.getElementById("ticketOverlay");
-
-    function mostrarTicket(v) {
-        document.getElementById("tkTienda").textContent = v.tienda;
-        document.getElementById("tkFolioFecha").textContent =
-            `Folio: ${String(v.folio).padStart(6, "0")}  ${new Date().toLocaleString("es-MX")}`;
-        document.getElementById("tkCajero").textContent = `Atendió: ${v.cajero}`;
-
-        const tabla = document.getElementById("tkItems");
-        tabla.textContent = "";
-        const enc = document.createElement("thead");
-        const filaEnc = document.createElement("tr");
-        ["Cant", "Producto", "Importe"].forEach((t, i) => {
-            const th = document.createElement("th");
-            th.textContent = t;
-            if (i === 2) th.className = "num";
-            filaEnc.appendChild(th);
-        });
-        enc.appendChild(filaEnc);
-        tabla.appendChild(enc);
-
-        const tb = document.createElement("tbody");
-        v.items.forEach(it => {
-            const tr = document.createElement("tr");
-            const c1 = document.createElement("td");
-            c1.textContent = it.cantidad;
-            const c2 = document.createElement("td");
-            c2.textContent = it.descripcion;
-            const c3 = document.createElement("td");
-            c3.className = "num";
-            c3.textContent = "$" + it.importe.toFixed(2);
-            tr.append(c1, c2, c3);
-            tb.appendChild(tr);
-        });
-        tabla.appendChild(tb);
-
-        const tot = document.getElementById("tkTotales");
-        tot.textContent = "";
-        const linea = (lbl, val, grande) => {
-            const d = document.createElement("div");
-            d.className = "fila" + (grande ? " grande" : "");
-            const s1 = document.createElement("span");
-            s1.textContent = lbl;
-            const s2 = document.createElement("span");
-            s2.textContent = "$" + val.toFixed(2);
-            d.append(s1, s2);
-            return d;
-        };
-        tot.append(
-            linea("TOTAL", v.total, true),
-            linea("Pago", v.pago),
-            linea("Cambio", v.cambio)
-        );
-
-        overlay.hidden = false;
-    }
-
-    document.getElementById("btnImprimir").addEventListener("click", function () {
-        window.print();
-    });
-    document.getElementById("btnCerrarTicket").addEventListener("click", function () {
-        overlay.hidden = true;
-        limpiarTicket();
-    });
+    // El ticket lo renderiza js/ticket.js (nvTicket)
 
     // Enter para agregar desde campo código + detección de escáner
     // (los escáneres teclean muy rápido; si no mandan Enter, agregamos al detectar la ráfaga)

@@ -11,6 +11,7 @@
 <script src="../js/supabase-config.js"></script>
 <script src="../js/auth.js"></script>
 <script src="../js/ui.js"></script>
+<script src="../js/ticket.js"></script>
 <script>requerirSesion();</script>
 
     <title>NeoVenta - Punto de venta</title>
@@ -58,6 +59,7 @@
                 <button class="btn gris">Cancelar</button>
                 <button class="btn rojo">Eliminar</button>
                 <button class="btn dorado">Cambiar</button>
+                <button class="btn azul">Mayoreo</button>
             </div>
 
             <div class="acciones-derecha">
@@ -74,27 +76,7 @@
         </div>
     </main>
 
-    <!-- Ticket de venta (modal tras cobrar; en impresión solo sale este bloque) -->
-    <div class="ticket-overlay" id="ticketOverlay" hidden>
-        <div class="ticket" id="ticket">
-            <div class="ticket-encabezado">
-                <p class="ticket-negocio" id="tkTienda"></p>
-                <p class="ticket-sub">NeoVenta · Punto de venta</p>
-                <p id="tkFolioFecha"></p>
-                <p id="tkCajero"></p>
-            </div>
-            <table class="ticket-items" id="tkItems"></table>
-            <div class="ticket-totales" id="tkTotales"></div>
-            <p class="ticket-gracias">¡Gracias por su compra!</p>
-        </div>
-        <div class="ticket-acciones">
-            <button id="btnImprimir" class="btn verde" type="button">
-                <i class="las la-print"></i> Imprimir
-            </button>
-            <button id="btnCerrarTicket" class="btn gris" type="button">Cerrar</button>
-        </div>
-    </div>
-
+    <!-- El ticket lo inyecta js/ticket.js al cobrar -->
     <script src="../js/puntoventa.js"></script>
 </body>
 </html>

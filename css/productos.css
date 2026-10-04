@@ -196,3 +196,13 @@ body {
         padding: 8px 14px;
     }
 }
+
+/* Stock bajo: cantidad en o por debajo del mínimo */
+.stock-bajo {
+    color: #c62828;
+    font-weight: 700;
+}
+
+.stock-bajo::after {
+    content: " ⚠";
+}

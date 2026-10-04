@@ -36,7 +36,13 @@ function renderizarProductos() {
         fila.appendChild(celda(`$${Number(producto.costo).toFixed(2)}`));
         fila.appendChild(celda(`$${Number(producto.venta).toFixed(2)}`));
         fila.appendChild(celda(`$${Number(producto.mayoreo).toFixed(2)}`));
-        fila.appendChild(celda(String(producto.cantidad)));
+        const tdCantidad = celda(String(producto.cantidad));
+        // Stock bajo: en o por debajo del mínimo configurado
+        if (Number(producto.minimo) > 0 && producto.cantidad <= producto.minimo) {
+            tdCantidad.classList.add("stock-bajo");
+            tdCantidad.title = `Stock bajo (mínimo ${producto.minimo})`;
+        }
+        fila.appendChild(tdCantidad);
         fila.appendChild(celdaIcono("la-trash-alt", () => eliminarProducto(index)));
         fila.appendChild(celdaIcono("la-edit", () => editarProducto(index)));
         tablaBody.appendChild(fila);

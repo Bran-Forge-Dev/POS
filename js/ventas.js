@@ -169,6 +169,12 @@ async function cargarVentasHoy() {
         const tdEstado = _td(tr, v.cancelada ? "Cancelada" : "Activa");
 
         const tdAccion = document.createElement("td");
+        const iconoTicket = document.createElement("i");
+        iconoTicket.className = "las la-receipt icono-ticket";
+        iconoTicket.title = "Ver / reimprimir ticket";
+        iconoTicket.addEventListener("click", () => reimprimirTicket(v));
+        tdAccion.appendChild(iconoTicket);
+
         if (v.cancelada) {
             tr.classList.add("venta-cancelada");
             tdEstado.classList.add("estado-cancelada");
@@ -202,6 +208,37 @@ async function cancelarVenta(folio) {
     }
     toast(`Venta #${folio} cancelada, stock regresado.`, "ok");
     await cargarPanel();
+}
+
+// Reimprimir ticket: trae el detalle de la venta y lo manda al
+// ticket compartido (js/ticket.js). Incluye sello si está cancelada.
+async function reimprimirTicket(venta) {
+    const { data: detalle, error } = await _supabase
+        .from("pos_detalle_venta")
+        .select("descripcion, cantidad, precio")
+        .eq("venta_id", venta.folio);
+
+    if (error || !detalle) {
+        toast("No se pudo cargar el ticket.", "error");
+        return;
+    }
+
+    const perfil = await getPerfil();
+    nvTicket({
+        folio: venta.folio,
+        tienda: perfil && perfil.pos_tiendas ? perfil.pos_tiendas.nombre : "NeoVenta",
+        cajero: _perfiles[venta.cajero_id] || "",
+        fecha: venta.fecha,
+        items: detalle.map(d => ({
+            cantidad: d.cantidad,
+            descripcion: d.descripcion,
+            importe: Number(d.precio) * d.cantidad
+        })),
+        total: venta.total,
+        pago: venta.pago,
+        cambio: venta.cambio,
+        cancelada: venta.cancelada
+    });
 }
 
 // ---------- Reporte: productos más vendidos ----------

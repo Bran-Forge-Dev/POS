@@ -302,6 +302,17 @@ body {
     text-decoration: none;
 }
 
+.icono-ticket {
+    color: #c67f00;
+    font-size: 1.15rem;
+    cursor: pointer;
+    margin-right: 10px;
+}
+
+.icono-ticket:hover {
+    transform: scale(1.15);
+}
+
 .icono-cancelar {
     color: #c62828;
     font-size: 1.15rem;

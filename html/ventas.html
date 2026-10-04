@@ -62,6 +62,29 @@
     </section>
 
     <section class="bloque">
+      <h2 class="subtitulo">Productos más vendidos</h2>
+      <div class="reporte-filtros">
+        <label>Desde <input type="date" id="repDesde"></label>
+        <label>Hasta <input type="date" id="repHasta"></label>
+        <button id="btnReporte" class="btn-card" type="button">Generar</button>
+      </div>
+      <div class="tabla-contenedor">
+        <table class="tabla">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Código</th>
+              <th>Producto</th>
+              <th>Unidades</th>
+              <th>Importe</th>
+            </tr>
+          </thead>
+          <tbody id="tbodyReporte"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="bloque">
       <h2 class="subtitulo">Historial de cortes</h2>
       <div class="tabla-contenedor">
         <table class="tabla">

@@ -13,7 +13,17 @@ let _corteAbierto = null;
 document.addEventListener("DOMContentLoaded", async function () {
     document.getElementById("btnAbrir").addEventListener("click", abrirCorte);
     document.getElementById("btnCerrar").addEventListener("click", cerrarCorte);
+    document.getElementById("btnReporte").addEventListener("click", cargarReporte);
+
+    // Rango por defecto del reporte: últimos 30 días
+    const hoy = new Date();
+    const hace30 = new Date();
+    hace30.setDate(hoy.getDate() - 30);
+    document.getElementById("repDesde").value = hace30.toISOString().slice(0, 10);
+    document.getElementById("repHasta").value = hoy.toISOString().slice(0, 10);
+
     await cargarPanel();
+    await cargarReporte();
 });
 
 async function cargarPanel() {
@@ -192,6 +202,52 @@ async function cancelarVenta(folio) {
     }
     toast(`Venta #${folio} cancelada, stock regresado.`, "ok");
     await cargarPanel();
+}
+
+// ---------- Reporte: productos más vendidos ----------
+
+async function cargarReporte() {
+    const desde = document.getElementById("repDesde").value;
+    const hasta = document.getElementById("repHasta").value;
+    if (!desde || !hasta) {
+        toast("Elige el rango de fechas.", "error");
+        return;
+    }
+
+    const { data, error } = await _supabase.rpc("pos_top_productos", {
+        p_desde: desde,
+        p_hasta: hasta,
+        p_limite: 20
+    });
+
+    if (error) {
+        toast("No se pudo generar el reporte: " + error.message, "error");
+        return;
+    }
+
+    const tbody = document.getElementById("tbodyReporte");
+    tbody.textContent = "";
+
+    (data || []).forEach((p, i) => {
+        const tr = document.createElement("tr");
+        _td(tr, i + 1);
+        _td(tr, p.codigo);
+        _td(tr, p.descripcion);
+        _td(tr, p.unidades);
+        _td(tr, _fmt(p.importe));
+        tbody.appendChild(tr);
+    });
+
+    if (!data || !data.length) {
+        const tr = document.createElement("tr");
+        const td = document.createElement("td");
+        td.colSpan = 5;
+        td.textContent = "Sin ventas en ese rango.";
+        td.style.textAlign = "center";
+        td.style.color = "#999";
+        tr.appendChild(td);
+        tbody.appendChild(tr);
+    }
 }
 
 // ---------- Historial de cortes ----------

@@ -257,6 +257,40 @@ body {
     background-color: #fdf6e3;
 }
 
+.reporte-filtros {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+    flex-wrap: wrap;
+    margin-top: 15px;
+}
+
+.reporte-filtros label {
+    font-size: 0.9rem;
+    color: #555;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.reporte-filtros input[type="date"] {
+    padding: 8px 10px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.9rem;
+}
+
+.reporte-filtros input[type="date"]:focus {
+    outline: none;
+    border-color: #c67f00;
+}
+
+.reporte-filtros .btn-card {
+    margin: 0;
+}
+
 .venta-cancelada td {
     color: #999;
     text-decoration: line-through;

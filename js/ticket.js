@@ -23,42 +23,44 @@
         .nv-ticket {
             width: 72mm; background: #fff; padding: 6mm 4mm;
             font-family: 'Consolas', 'Courier New', monospace;
-            font-size: 12px; color: #000; text-align: left;
+            font-size: 13px; color: #000; text-align: left;
             box-shadow: 0 4px 20px rgba(0,0,0,.3);
             max-height: 80vh; overflow-y: auto;
             box-sizing: border-box;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
         }
         .nv-ticket, .nv-ticket * {
             margin: 0; padding: 0; border: 0;
             font-family: 'Consolas', 'Courier New', monospace;
-            color: #000; background: transparent;
-            font-size: 12px; font-weight: 400;
+            color: #000 !important; background: transparent;
+            font-size: 13px; font-weight: 600;
         }
         .nv-tk-enc {
             border-bottom: 1px dashed #000 !important;
             padding-bottom: 8px !important; margin-bottom: 6px !important;
         }
         .nv-tk-negocio {
-            font-weight: 700 !important; font-size: 15px !important;
+            font-weight: 700 !important; font-size: 16px !important;
             text-transform: uppercase; text-align: center;
             margin-bottom: 2px !important;
         }
         .nv-tk-sub {
-            font-size: 10px !important; color: #444 !important;
+            font-size: 11px !important; color: #333 !important;
             text-align: center; margin-bottom: 8px !important;
         }
         .nv-tk-datos {
             display: flex; flex-direction: column; gap: 3px;
-            font-size: 11px;
+            font-size: 12px;
         }
         .nv-tk-datos .nv-tk-fila {
             display: flex; justify-content: space-between;
-            font-size: 11px !important;
+            font-size: 12px !important;
         }
         .nv-tk-tabla { width: 100%; border-collapse: collapse; }
         .nv-tk-tabla th {
             border-bottom: 1px dashed #000 !important; padding: 3px 2px !important;
-            text-align: left; font-size: 11px !important; font-weight: 700 !important;
+            text-align: left; font-size: 12px !important; font-weight: 700 !important;
         }
         .nv-tk-tabla td { padding: 3px 2px !important; vertical-align: top; }
         .nv-tk-tabla .nv-tk-num { text-align: right; white-space: nowrap; }
@@ -71,7 +73,7 @@
             padding: 2px 0 !important;
         }
         .nv-tk-tot .nv-tk-grande {
-            font-weight: 700 !important; font-size: 14px !important;
+            font-weight: 700 !important; font-size: 15px !important;
         }
         .nv-tk-gracias {
             text-align: center; border-top: 1px dashed #000 !important;

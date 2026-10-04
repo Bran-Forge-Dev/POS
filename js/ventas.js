@@ -140,7 +140,7 @@ async function cargarVentasHoy() {
     hoy.setHours(0, 0, 0, 0);
     const { data: ventas } = await _supabase
         .from("pos_ventas")
-        .select("folio, cajero_id, fecha, total, pago, cambio")
+        .select("folio, cajero_id, fecha, total, pago, cambio, cancelada")
         .gte("fecha", hoy.toISOString())
         .order("folio", { ascending: false });
 
@@ -149,7 +149,6 @@ async function cargarVentasHoy() {
     let totalDia = 0;
 
     (ventas || []).forEach(v => {
-        totalDia += Number(v.total);
         const tr = document.createElement("tr");
         _td(tr, "#" + v.folio);
         _td(tr, _fmtFecha(v.fecha));
@@ -157,11 +156,42 @@ async function cargarVentasHoy() {
         _td(tr, _fmt(v.total));
         _td(tr, _fmt(v.pago));
         _td(tr, _fmt(v.cambio));
+        const tdEstado = _td(tr, v.cancelada ? "Cancelada" : "Activa");
+
+        const tdAccion = document.createElement("td");
+        if (v.cancelada) {
+            tr.classList.add("venta-cancelada");
+            tdEstado.classList.add("estado-cancelada");
+        } else {
+            // El servidor valida el permiso real (admin o cajero con corte abierto)
+            const icono = document.createElement("i");
+            icono.className = "las la-undo icono-cancelar";
+            icono.title = "Cancelar venta";
+            icono.addEventListener("click", () => cancelarVenta(v.folio));
+            tdAccion.appendChild(icono);
+        }
+        tr.appendChild(tdAccion);
+
+        if (!v.cancelada) totalDia += Number(v.total);
         tbody.appendChild(tr);
     });
 
+    const activas = (ventas || []).filter(v => !v.cancelada).length;
     document.getElementById("totalHoy").textContent =
-        ventas && ventas.length ? ` — ${ventas.length} venta(s), ${_fmt(totalDia)}` : "";
+        activas ? ` — ${activas} venta(s), ${_fmt(totalDia)}` : "";
+}
+
+// Cancelar venta: el servidor valida permisos y regresa el stock
+async function cancelarVenta(folio) {
+    if (!await confirmar(`¿Cancelar la venta #${folio}? El stock regresará al inventario.`)) return;
+
+    const { error } = await _supabase.rpc("pos_cancelar_venta", { p_folio: folio });
+    if (error) {
+        toast("No se pudo cancelar: " + error.message, "error");
+        return;
+    }
+    toast(`Venta #${folio} cancelada, stock regresado.`, "ok");
+    await cargarPanel();
 }
 
 // ---------- Historial de cortes ----------

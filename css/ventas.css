@@ -257,6 +257,27 @@ body {
     background-color: #fdf6e3;
 }
 
+.venta-cancelada td {
+    color: #999;
+    text-decoration: line-through;
+}
+
+.venta-cancelada td.estado-cancelada {
+    color: #c62828;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.icono-cancelar {
+    color: #c62828;
+    font-size: 1.15rem;
+    cursor: pointer;
+}
+
+.icono-cancelar:hover {
+    transform: scale(1.15);
+}
+
 .dif-neg {
     color: #c62828;
     font-weight: 700;

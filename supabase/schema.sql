@@ -95,7 +95,11 @@ create table if not exists pos_ventas (
     fecha timestamptz not null default now(),
     total numeric(12,2) not null check (total >= 0),
     pago numeric(12,2) not null check (pago >= 0),
-    cambio numeric(12,2) not null check (cambio >= 0)
+    cambio numeric(12,2) not null check (cambio >= 0),
+    -- cancelación: la venta no se borra, queda el audit trail
+    cancelada boolean not null default false,
+    cancelada_en timestamptz,
+    cancelada_por uuid references auth.users(id)
 );
 
 -- Detalle: copia codigo/descripcion/precio para conservar
@@ -230,7 +234,8 @@ begin
     select coalesce(sum(total), 0), count(*)
     into v_total, v_num
     from pos_ventas
-    where corte_id = v_corte.id;
+    where corte_id = v_corte.id
+      and not cancelada;
 
     update pos_cortes set
         estado            = 'cerrado',
@@ -321,12 +326,72 @@ begin
 end;
 $$;
 
+-- Cancelar venta: la marca (sin borrarla) y regresa el stock
+-- en una transacción. admin cancela cualquiera de su tienda;
+-- el cajero solo las suyas mientras su corte siga abierto.
+create or replace function pos_cancelar_venta(p_folio bigint)
+returns boolean
+language plpgsql security definer
+set search_path = public
+as $$
+declare
+    v_tienda uuid;
+    v_venta pos_ventas;
+begin
+    select tienda_id into v_tienda from pos_perfiles where id = auth.uid();
+    if v_tienda is null then
+        raise exception 'Usuario no autorizado en NeoVenta';
+    end if;
+
+    select * into v_venta
+    from pos_ventas
+    where folio = p_folio and tienda_id = v_tienda
+    for update;
+
+    if not found then
+        raise exception 'La venta no existe en esta tienda';
+    end if;
+    if v_venta.cancelada then
+        raise exception 'La venta ya está cancelada';
+    end if;
+
+    if not pos_es_admin() then
+        if v_venta.cajero_id <> auth.uid() then
+            raise exception 'Solo un admin puede cancelar ventas de otros';
+        end if;
+        if v_venta.corte_id is null or not exists (
+            select 1 from pos_cortes
+            where id = v_venta.corte_id and estado = 'abierto'
+        ) then
+            raise exception 'El corte ya está cerrado; pide a un admin cancelarla';
+        end if;
+    end if;
+
+    update pos_ventas set
+        cancelada      = true,
+        cancelada_en   = now(),
+        cancelada_por  = auth.uid()
+    where folio = p_folio;
+
+    update pos_productos p
+    set cantidad = p.cantidad + d.cantidad
+    from pos_detalle_venta d
+    where d.venta_id = p_folio
+      and p.id = d.producto_id
+      and p.tienda_id = v_tienda;
+
+    return true;
+end;
+$$;
+
 revoke all on function pos_registrar_venta(jsonb, numeric) from public;
 grant execute on function pos_registrar_venta(jsonb, numeric) to authenticated;
 revoke all on function pos_abrir_corte(numeric) from public;
 revoke all on function pos_cerrar_corte(numeric) from public;
 grant execute on function pos_abrir_corte(numeric) to authenticated;
 grant execute on function pos_cerrar_corte(numeric) to authenticated;
+revoke all on function pos_cancelar_venta(bigint) from public;
+grant execute on function pos_cancelar_venta(bigint) to authenticated;
 
 -- ---------- ROW LEVEL SECURITY ----------
 

@@ -14,7 +14,7 @@ form.addEventListener("submit", async function (e) {
     };
 
     if (!producto.codigo || !producto.descripcion) {
-        alert("Completa todos los campos obligatorios");
+        toast("Completa todos los campos obligatorios", "error");
         return;
     }
 
@@ -25,12 +25,13 @@ form.addEventListener("submit", async function (e) {
     if (error) {
         // 23505 = violación de llave única (código duplicado)
         if (error.code === "23505") {
-            alert("El código del producto ya existe");
+            toast("El código del producto ya existe", "error");
         } else {
-            alert("No se pudo guardar: " + error.message);
+            toast("No se pudo guardar: " + error.message, "error");
         }
         return;
     }
 
-    window.location.href = "productos.html";
+    toast("Producto guardado.", "ok");
+    setTimeout(() => { window.location.href = "productos.html"; }, 800);
 });

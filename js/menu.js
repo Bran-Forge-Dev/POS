@@ -14,8 +14,7 @@ document.addEventListener("DOMContentLoaded", async function () {
         logoutLink.addEventListener("click", async function (e) {
             e.preventDefault(); // Evita que redirija de inmediato
 
-            const confirmar = confirm("¿Seguro que deseas cerrar sesión?");
-            if (confirmar) {
+            if (await confirmar("¿Seguro que deseas cerrar sesión?")) {
                 await cerrarSesion();
                 // Si el usuario confirma, redirige al enlace original
                 window.location.href = logoutLink.href;

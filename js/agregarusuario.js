@@ -16,7 +16,7 @@ async function guardarUsuario(event) {
 
     // Validación de campos
     if (!cuenta || !clave || !rol || !telefono || !fecha || !correo) {
-        alert("Por favor, llena todos los campos.");
+        toast("Por favor, llena todos los campos.", "error");
         return;
     }
 
@@ -27,7 +27,7 @@ async function guardarUsuario(event) {
     });
 
     if (error) {
-        alert("No se pudo crear la cuenta: " + error.message);
+        toast("No se pudo crear la cuenta: " + error.message, "error");
         return;
     }
 
@@ -45,11 +45,11 @@ async function guardarUsuario(event) {
         });
 
     if (errorPerfil) {
-        alert("Cuenta creada pero falló el perfil: " + errorPerfil.message);
+        toast("Cuenta creada pero falló el perfil: " + errorPerfil.message, "error");
         return;
     }
 
     // Limpiar formulario
     document.getElementById("formUsuario").reset();
-    alert("Usuario guardado correctamente.");
+    toast("Usuario guardado correctamente.", "ok");
 }

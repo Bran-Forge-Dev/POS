@@ -49,7 +49,7 @@ async function cargarUsuarios() {
 
     if (error) {
         console.error("Error cargando usuarios:", error.message);
-        alert("No se pudieron cargar los usuarios.");
+        toast("No se pudieron cargar los usuarios.", "error");
         return;
     }
     listaUsuarios = data;
@@ -65,10 +65,10 @@ async function eliminarUsuario(index) {
     const usuario = listaUsuarios[index];
     const perfil = await getPerfil();
     if (perfil && usuario.id === perfil.id) {
-        alert("No puedes eliminar tu propia cuenta en sesión.");
+        toast("No puedes eliminar tu propia cuenta en sesión.", "error");
         return;
     }
-    if (!confirm("¿Deseas eliminar este usuario?")) return;
+    if (!await confirmar("¿Deseas eliminar este usuario?")) return;
 
     const { error } = await _supabase
         .from("pos_perfiles")
@@ -76,11 +76,12 @@ async function eliminarUsuario(index) {
         .eq("id", usuario.id);
 
     if (error) {
-        alert("No se pudo eliminar: " + error.message);
+        toast("No se pudo eliminar: " + error.message, "error");
         return;
     }
     listaUsuarios.splice(index, 1);
     actualizarTablaUsuarios();
+    toast("Usuario eliminado.", "ok");
 }
 
 // ===============================
@@ -88,18 +89,22 @@ async function eliminarUsuario(index) {
 // ===============================
 async function editarUsuario(index) {
     const usuario = listaUsuarios[index];
-    const nuevaCuenta = prompt("Editar cuenta:", usuario.cuenta);
-    const nuevoRol = prompt("Editar rol (admin/cajero):", usuario.rol);
-    const nuevoTelefono = prompt("Editar teléfono:", usuario.telefono);
-    const nuevoCorreo = prompt("Editar correo:", usuario.correo);
+    const valores = await preguntarCampos("Editar usuario", [
+        { label: "Cuenta", valor: usuario.cuenta },
+        { label: "Rol (admin / cajero)", valor: usuario.rol },
+        { label: "Teléfono", valor: usuario.telefono },
+        { label: "Correo", valor: usuario.correo }
+    ]);
+    if (!valores) return;
 
-    if (!nuevaCuenta || !nuevoRol || !nuevoTelefono || !nuevoCorreo) return;
+    const [cuenta, rol, telefono, correo] = valores;
+    if (!cuenta.trim() || !rol.trim() || !telefono.trim() || !correo.trim()) return;
 
     const cambios = {
-        cuenta: nuevaCuenta.trim().toLowerCase(),
-        rol: nuevoRol.trim().toLowerCase(),
-        telefono: nuevoTelefono.trim(),
-        correo: nuevoCorreo.trim()
+        cuenta: cuenta.trim().toLowerCase(),
+        rol: rol.trim().toLowerCase(),
+        telefono: telefono.trim(),
+        correo: correo.trim()
     };
 
     const { error } = await _supabase
@@ -108,11 +113,12 @@ async function editarUsuario(index) {
         .eq("id", usuario.id);
 
     if (error) {
-        alert("No se pudo actualizar: " + error.message);
+        toast("No se pudo actualizar: " + error.message, "error");
         return;
     }
     listaUsuarios[index] = { ...usuario, ...cambios };
     actualizarTablaUsuarios();
+    toast("Usuario actualizado.", "ok");
 }
 
 // ===============================

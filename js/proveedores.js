@@ -46,7 +46,7 @@ async function cargarProveedores() {
 
     if (error) {
         console.error("Error cargando proveedores:", error.message);
-        alert("No se pudieron cargar los proveedores.");
+        toast("No se pudieron cargar los proveedores.", "error");
         return;
     }
     proveedores = data;
@@ -54,7 +54,7 @@ async function cargarProveedores() {
 }
 
 async function eliminarProveedor(index) {
-    if (!confirm("¿Eliminar proveedor?")) return;
+    if (!await confirmar("¿Eliminar proveedor?")) return;
 
     const { error } = await _supabase
         .from("pos_proveedores")
@@ -62,22 +62,27 @@ async function eliminarProveedor(index) {
         .eq("id", proveedores[index].id);
 
     if (error) {
-        alert("No se pudo eliminar: " + error.message);
+        toast("No se pudo eliminar: " + error.message, "error");
         return;
     }
+    toast("Proveedor eliminado.", "ok");
     proveedores.splice(index, 1);
     renderTabla();
 }
 
 async function editarProveedor(index) {
     const prov = proveedores[index];
-    const nombre = prompt("Nombre:", prov.nombre);
-    const razon = prompt("Razón social:", prov.razon);
-    const telefono = prompt("Teléfono:", prov.telefono);
-    const direccion = prompt("Dirección:", prov.direccion);
-    const correo = prompt("Correo:", prov.correo);
+    const valores = await preguntarCampos("Editar proveedor", [
+        { label: "Nombre", valor: prov.nombre },
+        { label: "Razón social", valor: prov.razon },
+        { label: "Teléfono", valor: prov.telefono },
+        { label: "Dirección", valor: prov.direccion },
+        { label: "Correo", valor: prov.correo }
+    ]);
+    if (!valores) return;
 
-    if (!nombre || !razon || !telefono || !direccion || !correo) return;
+    const [nombre, razon, telefono, direccion, correo] = valores;
+    if (!nombre.trim() || !razon.trim() || !telefono.trim() || !direccion.trim() || !correo.trim()) return;
 
     const cambios = {
         nombre: nombre.trim(),
@@ -93,11 +98,12 @@ async function editarProveedor(index) {
         .eq("id", prov.id);
 
     if (error) {
-        alert("No se pudo actualizar: " + error.message);
+        toast("No se pudo actualizar: " + error.message, "error");
         return;
     }
     proveedores[index] = { ...prov, ...cambios };
     renderTabla();
+    toast("Proveedor actualizado.", "ok");
 }
 
 document.addEventListener("DOMContentLoaded", cargarProveedores);

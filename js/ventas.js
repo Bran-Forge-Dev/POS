@@ -90,44 +90,45 @@ function _linea(etiqueta, valor, fuerte) {
 }
 
 async function abrirCorte() {
-    const input = prompt("Fondo inicial en caja (efectivo con el que empiezas):", "0");
+    const input = await preguntar("Fondo inicial en caja (efectivo con el que empiezas)", "0");
     if (input === null) return;
     const fondo = parseFloat(input);
     if (isNaN(fondo) || fondo < 0) {
-        alert("Fondo inválido.");
+        toast("Fondo inválido.", "error");
         return;
     }
     const { error } = await _supabase.rpc("pos_abrir_corte", { p_fondo: fondo });
     if (error) {
-        alert("No se pudo abrir el corte: " + error.message);
+        toast("No se pudo abrir el corte: " + error.message, "error");
         return;
     }
+    toast("Corte abierto.", "ok");
     await cargarPanel();
 }
 
 async function cerrarCorte() {
-    const input = prompt("Efectivo contado físicamente en caja:", "");
+    const input = await preguntar("Efectivo contado físicamente en caja", "");
     if (input === null) return;
     const contado = parseFloat(input);
     if (isNaN(contado) || contado < 0) {
-        alert("Cantidad inválida.");
+        toast("Cantidad inválida.", "error");
         return;
     }
     const { data: c, error } = await _supabase.rpc("pos_cerrar_corte", { p_contado: contado });
     if (error) {
-        alert("No se pudo cerrar el corte: " + error.message);
+        toast("No se pudo cerrar el corte: " + error.message, "error");
         return;
     }
     const dif = Number(c.diferencia);
     const etiqueta = dif < 0 ? " (FALTANTE)" : dif > 0 ? " (sobrante)" : " (cuadro exacto)";
-    alert(
-        "Corte cerrado.\n\n" +
+    await alerta(
         `Ventas: ${c.num_ventas}\n` +
         `Total vendido: ${_fmt(c.total_ventas)}\n` +
         `Fondo inicial: ${_fmt(c.fondo_inicial)}\n` +
         `Efectivo esperado: ${_fmt(c.efectivo_esperado)}\n` +
         `Efectivo contado: ${_fmt(c.efectivo_contado)}\n` +
-        `Diferencia: ${_fmt(dif)}${etiqueta}`
+        `Diferencia: ${_fmt(dif)}${etiqueta}`,
+        "Corte cerrado"
     );
     await cargarPanel();
 }

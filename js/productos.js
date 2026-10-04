@@ -51,7 +51,7 @@ async function cargarProductos() {
 
     if (error) {
         console.error("Error cargando productos:", error.message);
-        alert("No se pudieron cargar los productos.");
+        toast("No se pudieron cargar los productos.", "error");
         return;
     }
     productos = data;
@@ -63,7 +63,7 @@ async function cargarProductos() {
  * @param {number} index - Posición del producto en el array
  */
 async function eliminarProducto(index) {
-    if (!confirm("¿Estás seguro de que deseas eliminar este producto?")) return;
+    if (!await confirmar("¿Estás seguro de que deseas eliminar este producto?")) return;
 
     const { error } = await _supabase
         .from("pos_productos")
@@ -71,9 +71,10 @@ async function eliminarProducto(index) {
         .eq("id", productos[index].id);
 
     if (error) {
-        alert("No se pudo eliminar: " + error.message);
+        toast("No se pudo eliminar: " + error.message, "error");
         return;
     }
+    toast("Producto eliminado.", "ok");
     productos.splice(index, 1);
     renderizarProductos();
 }
@@ -84,17 +85,19 @@ async function eliminarProducto(index) {
  */
 async function editarProducto(index) {
     const p = productos[index];
-    const descripcion = prompt("Descripción:", p.descripcion);
-    const costo = prompt("Precio costo:", p.costo);
-    const venta = prompt("Precio venta:", p.venta);
-    const mayoreo = prompt("Precio mayoreo:", p.mayoreo);
-    const cantidad = prompt("Cantidad actual:", p.cantidad);
+    const valores = await preguntarCampos("Editar producto", [
+        { label: "Descripción", valor: p.descripcion },
+        { label: "Precio costo", valor: p.costo },
+        { label: "Precio venta", valor: p.venta },
+        { label: "Precio mayoreo", valor: p.mayoreo },
+        { label: "Cantidad actual", valor: p.cantidad }
+    ]);
+    if (!valores) return;
 
-    if (!descripcion || costo === null || venta === null || mayoreo === null || cantidad === null) return;
-
+    const [descripcion, costo, venta, mayoreo, cantidad] = valores;
     const nums = [Number(costo), Number(venta), Number(mayoreo), Number(cantidad)];
-    if (nums.some(isNaN)) {
-        alert("Los precios y la cantidad deben ser números.");
+    if (!descripcion.trim() || nums.some(isNaN)) {
+        toast("Revisa los datos: precios y cantidad deben ser números.", "error");
         return;
     }
 
@@ -112,11 +115,12 @@ async function editarProducto(index) {
         .eq("id", p.id);
 
     if (error) {
-        alert("No se pudo actualizar: " + error.message);
+        toast("No se pudo actualizar: " + error.message, "error");
         return;
     }
     productos[index] = { ...p, ...cambios };
     renderizarProductos();
+    toast("Producto actualizado.", "ok");
 }
 
 // Inicializar al cargar la página

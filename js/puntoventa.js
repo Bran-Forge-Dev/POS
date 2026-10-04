@@ -9,7 +9,7 @@ document.addEventListener("DOMContentLoaded", async function () {
             .select("*")
             .order("codigo");
         if (error) {
-            alert("No se pudo cargar el catálogo de productos.");
+            toast("No se pudo cargar el catálogo de productos.", "error");
             return;
         }
         productos = data;
@@ -120,13 +120,13 @@ document.addEventListener("DOMContentLoaded", async function () {
     btnAgregar.addEventListener("click", function () {
         const codigo = inputCodigo.value.trim();
         if (!codigo) {
-            alert("Ingresa un código.");
+            toast("Ingresa un código.", "error");
             return;
         }
 
         const producto = productos.find(p => p.codigo === codigo);
         if (!producto) {
-            alert("Producto no encontrado");
+            toast("Producto no encontrado.", "error");
             inputCodigo.value = "";
             inputCodigo.focus();
             return;
@@ -138,7 +138,7 @@ document.addEventListener("DOMContentLoaded", async function () {
             const importeCell = filaExistente.cells[4];
             const nuevaCantidad = parseInt(cantidadCell.textContent, 10) + 1;
             if (nuevaCantidad > producto.cantidad) {
-                alert(`Sin existencia suficiente. Disponible: ${producto.cantidad}`);
+                toast(`Sin existencia suficiente. Disponible: ${producto.cantidad}`, "error");
                 inputCodigo.value = "";
                 inputCodigo.focus();
                 return;
@@ -147,7 +147,7 @@ document.addEventListener("DOMContentLoaded", async function () {
             importeCell.textContent = `$${(producto.venta * nuevaCantidad).toFixed(2)}`;
         } else {
             if (producto.cantidad < 1) {
-                alert("Producto sin existencia.");
+                toast("Producto sin existencia.", "error");
                 inputCodigo.value = "";
                 inputCodigo.focus();
                 return;
@@ -175,7 +175,7 @@ document.addEventListener("DOMContentLoaded", async function () {
     // Eliminar: quita la fila seleccionada del ticket
     botonEliminar.addEventListener("click", function () {
         if (!filaSeleccionada) {
-            alert("Selecciona un producto del ticket primero (clic en la fila).");
+            toast("Selecciona un producto del ticket primero (clic en la fila).", "error");
             return;
         }
         filaSeleccionada.remove();
@@ -185,24 +185,24 @@ document.addEventListener("DOMContentLoaded", async function () {
     });
 
     // Cambiar: edita la cantidad de la fila seleccionada
-    botonCambiar.addEventListener("click", function () {
+    botonCambiar.addEventListener("click", async function () {
         if (!filaSeleccionada) {
-            alert("Selecciona un producto del ticket primero (clic en la fila).");
+            toast("Selecciona un producto del ticket primero (clic en la fila).", "error");
             return;
         }
         const codigo = filaSeleccionada.cells[0].textContent;
         const producto = productos.find(p => p.codigo === codigo);
         const actual = parseInt(filaSeleccionada.cells[3].textContent, 10);
-        const entrada = prompt("Nueva cantidad:", actual);
+        const entrada = await preguntar("Nueva cantidad", actual);
         if (entrada === null) return;
 
         const nueva = parseInt(entrada, 10);
         if (isNaN(nueva) || nueva <= 0) {
-            alert("Cantidad inválida.");
+            toast("Cantidad inválida.", "error");
             return;
         }
         if (nueva > producto.cantidad) {
-            alert(`Sin existencia suficiente. Disponible: ${producto.cantidad}`);
+            toast(`Sin existencia suficiente. Disponible: ${producto.cantidad}`, "error");
             return;
         }
         filaSeleccionada.cells[3].textContent = nueva;
@@ -220,15 +220,15 @@ document.addEventListener("DOMContentLoaded", async function () {
         const pagoVal = parseFloat(inputPago.value);
 
         if (totalActual === 0) {
-            alert("No hay productos para cobrar.");
+            toast("No hay productos para cobrar.", "error");
             return;
         }
         if (isNaN(pagoVal) || pagoVal <= 0) {
-            alert("Ingrese un monto válido en 'Pago con'.");
+            toast("Ingrese un monto válido en 'Pago con'.", "error");
             return;
         }
         if (pagoVal < totalActual) {
-            alert(`El pago es insuficiente. Faltan $${(totalActual - pagoVal).toFixed(2)}.`);
+            toast(`El pago es insuficiente. Faltan $${(totalActual - pagoVal).toFixed(2)}.`, "error");
             return;
         }
 
@@ -252,7 +252,7 @@ document.addEventListener("DOMContentLoaded", async function () {
         });
 
         if (error) {
-            alert("No se pudo registrar la venta: " + error.message);
+            toast("No se pudo registrar la venta: " + error.message, "error");
             cambioMonto.textContent = "$0.00";
             return;
         }

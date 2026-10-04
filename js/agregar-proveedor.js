@@ -18,12 +18,13 @@ form.addEventListener("submit", async e => {
 
     if (error) {
         if (error.code === "23505") {
-            alert("El código del proveedor ya existe");
+            toast("El código del proveedor ya existe", "error");
         } else {
-            alert("No se pudo guardar: " + error.message);
+            toast("No se pudo guardar: " + error.message, "error");
         }
         return;
     }
 
-    window.location.href = "proveedores.html";
+    toast("Proveedor guardado.", "ok");
+    setTimeout(() => { window.location.href = "proveedores.html"; }, 800);
 });

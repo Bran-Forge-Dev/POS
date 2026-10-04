@@ -46,9 +46,10 @@
 
 // ---------- helpers de estilo inline ----------
 const TK = {
-    ticket: "width:72mm;background:#fff;padding:6mm 4mm;box-sizing:border-box;" +
+    ticket: "width:72mm;background:#fff;background-color:#fff;padding:6mm 4mm;box-sizing:border-box;" +
         "font-family:Consolas,'Courier New',monospace;font-size:13px;color:#000;" +
-        "text-align:left;box-shadow:0 4px 20px rgba(0,0,0,.3);max-height:80vh;overflow-y:auto;",
+        "text-align:left;box-shadow:0 4px 20px rgba(0,0,0,.3);max-height:80vh;overflow-y:auto;" +
+        "opacity:1;filter:none;mix-blend-mode:normal;isolation:isolate;",
     enc: "display:block;text-align:left;border-bottom:1px dashed #000;padding-bottom:8px;margin-bottom:6px;",
     negocio: "display:block;text-align:center;font-weight:700;font-size:16px;text-transform:uppercase;margin:0 0 2px;",
     sub: "display:block;text-align:center;font-size:11px;color:#333;margin:0 0 8px;",

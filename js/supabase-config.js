@@ -11,3 +11,7 @@ const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 const _supabaseAdmin = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
     auth: { persistSession: false, autoRefreshToken: false }
 });
+
+// Correo de soporte que ven tus clientes (ícono de audífonos en
+// el menú). Pon aquí tu correo; si queda vacío el ícono no sale.
+const SOPORTE_CORREO = '';

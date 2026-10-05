@@ -42,6 +42,15 @@ document.addEventListener("DOMContentLoaded", async function () {
     const iconoAjustes = document.getElementById("iconoAjustes");
     if (iconoAjustes) iconoAjustes.addEventListener("click", cambiarClave);
 
+    // Soporte: mailto al correo configurado en supabase-config.js;
+    // si está vacío el ícono ni siquiera aparece
+    const linkSoporte = document.getElementById("linkSoporte");
+    if (linkSoporte && SOPORTE_CORREO) {
+        linkSoporte.href = "mailto:" + SOPORTE_CORREO
+            + "?subject=" + encodeURIComponent("Soporte NeoVenta");
+        linkSoporte.hidden = false;
+    }
+
     // Selecciona el enlace Cerrar sesión (el que apunta al login)
     const logoutLink = document.querySelector('a.logout[href="../index.html"]');
 

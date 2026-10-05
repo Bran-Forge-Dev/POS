@@ -134,6 +134,9 @@ footer {
     position: fixed;
     bottom: 20px;
     right: 25px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
 }
 
     footer i {

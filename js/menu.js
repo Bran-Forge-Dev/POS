@@ -7,6 +7,12 @@ document.addEventListener("DOMContentLoaded", async function () {
         usuarioSpan.textContent = `${perfil.cuenta} · ${perfil.rol}${tienda}`;
     }
 
+    // Card de Tiendas: solo visible para el superadmin
+    if (perfil && perfil.rol === "superadmin") {
+        const cardTiendas = document.getElementById("cardTiendas");
+        if (cardTiendas) cardTiendas.hidden = false;
+    }
+
     // Cambiar contraseña: self-service del usuario logueado,
     // desde el ícono de ajustes del footer.
     async function cambiarClave(e) {

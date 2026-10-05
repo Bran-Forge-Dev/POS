@@ -1,5 +1,14 @@
 const form = document.getElementById("formProducto");
 
+// Escáner de códigos: el sufijo Enter que mandan los lectores
+// debe avanzar a Descripción, no enviar el formulario vacío.
+document.getElementById("codigo").addEventListener("keydown", function (e) {
+    if (e.key === "Enter") {
+        e.preventDefault();
+        document.getElementById("descripcion").focus();
+    }
+});
+
 form.addEventListener("submit", async function (e) {
     e.preventDefault();
 

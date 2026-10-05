@@ -36,13 +36,15 @@ Deno.serve(async (req) => {
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) return resp({ error: "Sin sesión" }, 401);
 
-    const { nombre_tienda, cuenta, clave } = await req.json().catch(() => ({}));
+    const { nombre_tienda, cuenta, clave, correo } = await req.json().catch(() => ({}));
     const cuentaLimpia = String(cuenta || "").trim().toLowerCase();
+    const correoLimpio = String(correo || "").trim().toLowerCase();
     if (!String(nombre_tienda || "").trim()
         || !/^[a-z0-9_]{3,30}$/.test(cuentaLimpia)
-        || typeof clave !== "string" || clave.length < 6) {
+        || typeof clave !== "string" || clave.length < 6
+        || (correoLimpio && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(correoLimpio))) {
         return resp({
-            error: "Datos inválidos: nombre de tienda, cuenta (3-30, letras/números/_) y clave mínimo 6"
+            error: "Datos inválidos: nombre de tienda, cuenta (3-30, letras/números/_), clave mínimo 6 y correo válido"
         }, 400);
     }
 
@@ -95,7 +97,8 @@ Deno.serve(async (req) => {
             id: userId,
             tienda_id: tienda.id,
             cuenta: cuentaLimpia,
-            rol: "admin"
+            rol: "admin",
+            correo: correoLimpio
         });
     if (perfilError) {
         // rollback: ni tienda ni auth user deben quedar sueltos

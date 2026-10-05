@@ -40,7 +40,14 @@ function actualizarTablaUsuarios() {
             ));
         }
         fila.appendChild(celda(usuario.telefono));
-        fila.appendChild(celda(usuario.correo));
+        const tdCorreo = document.createElement("td");
+        if (usuario.correo) {
+            const enlace = document.createElement("a");
+            enlace.href = "mailto:" + usuario.correo;
+            enlace.textContent = usuario.correo;
+            tdCorreo.appendChild(enlace);
+        }
+        fila.appendChild(tdCorreo);
         fila.appendChild(celdaIcono("la-trash-alt", () => eliminarUsuario(index)));
         fila.appendChild(celdaIcono("la-edit", () => editarUsuario(index)));
         fila.appendChild(celdaIcono("la-key", () => resetearClave(index)));

@@ -62,18 +62,25 @@ async function nuevaTienda() {
     const valores = await preguntarCampos("Nueva tienda", [
         { label: "Nombre de la tienda" },
         { label: "Cuenta del admin" },
+        { label: "Correo del dueño (contacto)" },
         { label: "Contraseña temporal", tipo: "password" }
     ]);
     if (!valores) return;
 
-    const [nombre, cuenta, clave] = valores.map(v => v.trim());
-    if (!nombre || !/^[a-z0-9_]{3,30}$/.test(cuenta.toLowerCase()) || clave.length < 6) {
-        toast("Revisa los datos: la cuenta usa letras/números/_ (3-30) y la clave mínimo 6.", "error");
+    const [nombre, cuenta, correo, clave] = valores.map(v => v.trim());
+    if (!nombre || !/^[a-z0-9_]{3,30}$/.test(cuenta.toLowerCase()) || clave.length < 6
+        || (correo && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(correo))) {
+        toast("Revisa los datos: cuenta con letras/números/_ (3-30), correo válido y clave mínimo 6.", "error");
         return;
     }
 
     const { error } = await _supabase.functions.invoke("superadmin-crear-tienda", {
-        body: { nombre_tienda: nombre, cuenta: cuenta.toLowerCase(), clave }
+        body: {
+            nombre_tienda: nombre,
+            cuenta: cuenta.toLowerCase(),
+            correo: correo.toLowerCase(),
+            clave
+        }
     });
 
     if (error) {

@@ -2,6 +2,7 @@
 // Usuarios desde Supabase (pos_perfiles)
 // ===============================
 let listaUsuarios = [];
+let esSuperadmin = false;
 
 // ===============================
 // Helpers de tabla
@@ -33,6 +34,11 @@ function actualizarTablaUsuarios() {
         const fila = document.createElement("tr");
         fila.appendChild(celda(usuario.cuenta));
         fila.appendChild(celda(usuario.rol));
+        if (esSuperadmin) {
+            fila.appendChild(celda(
+                usuario.pos_tiendas ? usuario.pos_tiendas.nombre : "—"
+            ));
+        }
         fila.appendChild(celda(usuario.telefono));
         fila.appendChild(celda(usuario.correo));
         fila.appendChild(celdaIcono("la-trash-alt", () => eliminarUsuario(index)));
@@ -43,9 +49,21 @@ function actualizarTablaUsuarios() {
 }
 
 async function cargarUsuarios() {
+    // El superadmin ve usuarios de TODAS las tiendas (columna
+    // Tienda). El admin ve solo los de la suya (lo hace el RLS).
+    const perfil = await getPerfil();
+    esSuperadmin = perfil && perfil.rol === "superadmin";
+    if (esSuperadmin) {
+        document.getElementById("thTienda").hidden = false;
+        // Crear usuarios va ligado a una tienda: el superadmin
+        // da de alta admins desde Tiendas, no crea cajeros aquí
+        const btnAgregar = document.querySelector(".contenedor-agregar");
+        if (btnAgregar) btnAgregar.hidden = true;
+    }
+
     const { data, error } = await _supabase
         .from("pos_perfiles")
-        .select("*")
+        .select("*, pos_tiendas(nombre)")
         .eq("activo", true)
         .order("cuenta");
 

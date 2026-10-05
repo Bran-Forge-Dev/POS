@@ -50,10 +50,11 @@ async function requerirSesion() {
     }
 }
 
-// Para páginas solo de administrador: rebota al menú si el rol no coincide
-async function requerirRol(rol) {
+// Para páginas restringidas por rol: rebota al menú si el rol
+// no está entre los permitidos. requerirRol("admin", "superadmin")
+async function requerirRol(...roles) {
     const perfil = await getPerfil();
-    if (!perfil || perfil.rol !== rol) {
+    if (!perfil || !roles.includes(perfil.rol)) {
         window.location.replace("menu.html");
     }
 }

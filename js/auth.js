@@ -59,7 +59,14 @@ async function requerirRol(...roles) {
     }
 }
 
+// Limpia el perfil cacheado (al cerrar sesión o al entrar con
+// otra cuenta: el caché de la anterior no debe seguir sirviendo)
+function limpiarPerfilCache() {
+    _perfilCache = null;
+    sessionStorage.removeItem(NEOV_PERFIL_KEY);
+}
+
 async function cerrarSesion() {
     await _supabase.auth.signOut();
-    sessionStorage.removeItem(NEOV_PERFIL_KEY);
+    limpiarPerfilCache();
 }

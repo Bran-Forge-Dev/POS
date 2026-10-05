@@ -27,6 +27,8 @@ document.addEventListener("DOMContentLoaded", async function () {
         });
 
         if (!error) {
+            // El caché puede tener el perfil de otra cuenta previa
+            limpiarPerfilCache();
             window.location.href = "html/menu.html";
         } else {
             console.error("Error de login:", error.message);

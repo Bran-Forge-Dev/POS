@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NeoVenta - Plan de Licencia</title>
+  <link href="css/plan.css" rel="stylesheet" />
+  <link href="https://maxst.icons8.com/vue-static/landings/line-awesome/line-awesome/1.3.0/css/line-awesome.min.css" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/supabase-config.js"></script>
+  <script src="js/ui.js"></script>
+</head>
+
+<body>
+  <div class="background"></div>
+
+  <main class="plan-wrap">
+    <header class="plan-header">
+      <h1 class="plan-logo"><i class="las la-cash-register"></i> NeoVenta</h1>
+      <p class="plan-tagline">Haz que tu negocio nunca deje de vender</p>
+    </header>
+
+    <section class="plan-card">
+      <div class="plan-info">
+        <h2>Plan Negocio</h2>
+        <ul class="plan-lista">
+          <li><i class="las la-check-circle"></i> Punto de venta con lector de código de barras</li>
+          <li><i class="las la-check-circle"></i> Control de inventario con alertas de stock bajo</li>
+          <li><i class="las la-check-circle"></i> Precios de mayoreo y menudeo</li>
+          <li><i class="las la-check-circle"></i> Cortes de caja con arqueo automático</li>
+          <li><i class="las la-check-circle"></i> Tickets imprimibles (térmica o impresora doméstica)</li>
+          <li><i class="las la-check-circle"></i> Cancelaciones con registro de auditoría</li>
+          <li><i class="las la-check-circle"></i> Reportes: ventas del día y productos más vendidos</li>
+          <li><i class="las la-check-circle"></i> Usuarios con roles (administrador y cajeros)</li>
+          <li><i class="las la-check-circle"></i> Acceso desde cualquier celular o PC</li>
+        </ul>
+      </div>
+
+      <aside class="plan-precio">
+        <span class="precio-label">Inversión mensual</span>
+        <p class="precio">$299<span class="precio-moneda">/MXN</span></p>
+        <p class="precio-nota">Sin plazos forzosos · Cancela cuando quieras</p>
+        <button class="btn-secundario" id="btnInfo" type="button">Quiero más información</button>
+        <button class="btn-primario" id="btnActivar" type="button">Activar mi licencia</button>
+      </aside>
+    </section>
+
+    <p class="plan-volver">¿Ya tienes cuenta? <a href="index.html">Inicia sesión aquí</a></p>
+  </main>
+
+  <script>
+    // Los botones escriben al correo de soporte configurado en
+    // supabase-config.js; si no hay, avisan que está por habilitarse.
+    function contactoSoporte(asunto) {
+      if (typeof SOPORTE_CORREO === "string" && SOPORTE_CORREO) {
+        location.href = "mailto:" + SOPORTE_CORREO
+          + "?subject=" + encodeURIComponent(asunto)
+          + "&body=" + encodeURIComponent("Hola, quiero " + asunto.toLowerCase() + " de NeoVenta para mi negocio.");
+      } else {
+        toast("El contacto directo se habilitará pronto.", "info");
+      }
+    }
+    document.getElementById("btnInfo")
+        .addEventListener("click", () => contactoSoporte("Información del plan NeoVenta"));
+    document.getElementById("btnActivar")
+        .addEventListener("click", () => contactoSoporte("Activar licencia NeoVenta"));
+  </script>
+</body>
+</html>

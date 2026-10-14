@@ -14,4 +14,4 @@ const _supabaseAdmin = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
 
 // Correo de soporte que ven tus clientes (ícono de audífonos en
 // el menú). Pon aquí tu correo; si queda vacío el ícono no sale.
-const SOPORTE_CORREO = '';
+const SOPORTE_CORREO = 'soporte@branforgedev.com';
